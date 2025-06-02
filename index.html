@@ -254,7 +254,7 @@
         if (isNamed) {
           // Получаем список гостей по inviteId из Google Таблицы
           fetch(
-            `https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?invite=${inviteId}`
+            `https://script.google.com/macros/s/AKfycbxfNTanfQH3eoCAoW4CErPmk6kh5BT5l3ZwMyJa9nnDxXFCCl6PwCJFKak8HXRQV9MxLg/exec?invite=${inviteId}`
           )
             .then((res) => res.text())
             .then((names) => {
