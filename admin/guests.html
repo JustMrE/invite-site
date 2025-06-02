@@ -83,6 +83,7 @@
             const guests = invite.guests || [];
             const created = new Date(invite.created).toLocaleString();
             const status = invite.status || "pending";
+            const type = invite.type || "named";
 
             let statusText, statusClass;
             switch (status) {
@@ -100,7 +101,7 @@
                 break;
             }
 
-            const typeText = guests.length > 0 ? "Именной" : "Неименной";
+            const typeText = type === "named" ? "Именной" : "Неименной";
 
             if (guests.length === 0) {
               const tr = document.createElement("tr");

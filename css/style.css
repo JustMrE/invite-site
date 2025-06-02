@@ -8,10 +8,14 @@ body {
   color: #3b1f14;
 }
 
-@media (max-width: 1440px) {
+@media (max-width: 1866px) {
   body {
     background-size: contain;
   }
+}
+
+p {
+  font-size: 1.5em;
 }
 
 .lang-toggle {
@@ -25,11 +29,24 @@ header h1 {
   animation: bounceIn 2s ease-in-out;
 }
 
-.hero {
+.title {
   text-align: center;
   padding: 6rem 1rem 0.5rem;
   font-size: 2rem;
   color: #731c0a;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem
+}
+
+.hero-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem
 }
 
 .block {

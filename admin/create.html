@@ -116,6 +116,7 @@
           .set({
             guests: guestNames,
             created: new Date().toISOString(),
+            type: "named",
           })
           .then(() => {
             const url = `index.html?invite=${inviteId}`;

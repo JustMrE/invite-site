@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+  let guestsRu1 = "Уважаемый(-ые) родные и близкие, братья, сестры, дяди и племянники, друзья и соседи!"
+  let guestsKz1 = "Құрметті Ағайын-туыс, бауырлар, құда-жекжат, нағашы-жиен, бөлелер, дос-жарандар, көршілер!"
+  let guestsRu2 = ""
+  let guestsKz2 = ""
   const eventDate = new Date("2025-06-15T14:00:00+0500");
   const elements = {
     days: document.getElementById("days"),
@@ -6,13 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     minutes: document.getElementById("minutes"),
     seconds: document.getElementById("seconds"),
   };
-
-  document.getElementById("rsvpForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    document.getElementById("rsvpForm").style.display = "none";
-    document.getElementById("thanksMsg").style.display = "block";
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  });
 
   function updateCountdown() {
     const now = new Date();
@@ -93,62 +90,73 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("mainTitle").innerText = isKazakh
       ? "Приглашение на той"
       : "Тойға шақыру";
+    document.getElementById("guestGreeting").innerText = isKazakh
+      ? `${guestsRu1}`
+      : `${guestsKz1}`;
     document.getElementById("lang-1").innerHTML = isKazakh
-      ? `<div class="greeting greeting-1">
-          <img src="./img/asset1.png" alt="Юрта" class="invite-icon" />
-          <h2 class="text-center">
-            Уважаемые родные и близкие, братья, сестры, дяди и племянники, друзья и соседи!
-          </h2>
-        </div>
-        <div class="greeting greeting-2">
-          <p class="text-center">
-            Приглашаем вас стать почётным гостем за нашим ақ дастархан, посвящённым празднику наших внуков!
-          </p>
-          <img src="./img/asset2.png" alt="Баурсақ" class="invite-icon" />
-        </div>
-        <div class="greeting greeting-3">
-          <p class="text-center">
-            <strong>Организаторы:</strong><br />
-          <strong>Бауржан, Қамар</strong>
-          </p>
-          <img src="./img/asset3.png" alt="Домбыра" class="invite-icon" />
-        </div>`
-      : `<div class="greeting greeting-1">
-          <img src="./img/asset1.png" alt="Юрта" class="invite-icon" />
-          <h2 class="text-center">
-            Құрметті Ағайын-туыс, бауырлар, құда-жекжат, нағашы-жиен,
-            бөлелер, дос-жарандар, көршілер!
-          </h2>
-        </div>
-        <div class="greeting greeting-2">
-          <p class="text-center">
-            Сіздерді немерелеріміздің тойларына арналған ақ дастарханымыздың
-            қадірменді қонағы болуға шақырамыз!
-          </p>
-          <img src="./img/asset2.png" alt="Баурсақ" class="invite-icon" />
-        </div>
-        <div class="greeting greeting-3">
-          <p class="text-center">
-            <strong>Той иелері:</strong><br />
-            <strong>Бауржан, Қамар</strong>
-          </p>
-          <img src="./img/asset3.png" alt="Домбыра" class="invite-icon" />
-        </div>`;
+      ? "Приглашаем вас стать почётным гостем за нашим ақ дастархан, посвящённым празднику наших внуков!"
+      : "Сіздерді немерелеріміздің тойларына арналған ақ дастарханымыздың қадірменді қонағы болуға шақырамыз!";
+    document.getElementById("lang-2").innerHTML = isKazakh
+      ? "<strong>Организаторы:</strong><br /><strong>Бауржан, Қамар</strong>"
+      : "<strong>Той иелері:</strong><br /><strong>Бауржан, Қамар</strong>";
+    //  `<div class="greeting greeting-1">
+    //     <img src="./img/asset1.png" alt="Юрта" class="invite-icon" />
+    //     <h2 class="text-center">
+    //       Уважаемые родные и близкие, братья, сестры, дяди и племянники, друзья и соседи!
+    //     </h2>
+    //   </div>
+    //   <div class="greeting greeting-2">
+    //     <p class="text-center">
+    //       Приглашаем вас стать почётным гостем за нашим ақ дастархан, посвящённым празднику наших внуков!
+    //     </p>
+    //     <img src="./img/asset2.png" alt="Баурсақ" class="invite-icon" />
+    //   </div>
+    //   <div class="greeting greeting-3">
+    //     <p class="text-center">
+    //       <strong>Организаторы:</strong><br />
+    //     <strong>Бауржан, Қамар</strong>
+    //     </p>
+    //     <img src="./img/asset3.png" alt="Домбыра" class="invite-icon" />
+    //   </div>`
+    // : `<div class="greeting greeting-1">
+    //     <img src="./img/asset1.png" alt="Юрта" class="invite-icon" />
+    //     <h2 class="text-center">
+    //       Құрметті Ағайын-туыс, бауырлар, құда-жекжат, нағашы-жиен,
+    //       бөлелер, дос-жарандар, көршілер!
+    //     </h2>
+    //   </div>
+    //   <div class="greeting greeting-2">
+    //     <p class="text-center">
+    //       Сіздерді немерелеріміздің тойларына арналған ақ дастарханымыздың
+    //       қадірменді қонағы болуға шақырамыз!
+    //     </p>
+    //     <img src="./img/asset2.png" alt="Баурсақ" class="invite-icon" />
+    //   </div>
+    //   <div class="greeting greeting-3">
+    //     <p class="text-center">
+    //       <strong>Той иелері:</strong><br />
+    //       <strong>Бауржан, Қамар</strong>
+    //     </p>
+    //     <img src="./img/asset3.png" alt="Домбыра" class="invite-icon" />
+    //   </div>`;
 
     document.getElementById("address-lang-1").innerText = isKazakh
       ? "Мероприятие состоится:"
       : "Той салтанаты:";
     document.getElementById("address-lang-2").innerText = isKazakh
-      ? "15 ияюня 2025 г, 14:00 часов"
+      ? "15 июня 2025 г, 14:00 часов"
       : "15 маусым 2025 ж, 14:00";
     document.getElementById("address-lang-3").innerText = isKazakh
       ? "показать на карте"
       : "қартада ашу";
 
+    document.getElementById("submitCome").innerText = isKazakh
+      ? `${guestsRu2} `
+      : `${guestsKz2} `
     document.getElementById("rsvp-lang-1").innerText = isKazakh
       ? "Просим подтвердить ваше присутствие в мероприятии"
       : "Тойға келетіңізді растауыңызды сұраймыз";
-    document.getElementById("rsvp-lang-2").placeholder = isKazakh
+    document.getElementById("nameBlock").placeholder = isKazakh
       ? "Ваше имя"
       : "Сіздің атыңыз";
     document.getElementById("rsvp-lang-3").innerText = isKazakh
@@ -158,6 +166,16 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("rsvp-lang-4").innerText = isKazakh
       ? "Не смогу"
       : "Өкінішке орай келе алмаймын";
+
+    document.getElementById("thanksMsg").innerText = isKazakh
+      ? "Спасибо, ждем вас!"
+      : "Рақмет, күтеміз!";
+    document.getElementById("sorryMsg").innerText = isKazakh
+      ? "Очень жаль."
+      : "Қап, өкінішті. Келесі жолы!";
+    document.getElementById("countdown-lang-1").innerText = isKazakh
+      ? "До начала мероприятия:"
+      : "Той салтанатына дейін:";
   });
 
   setInterval(updateCountdown, 1000);
@@ -180,4 +198,114 @@ document.addEventListener("DOMContentLoaded", () => {
 
   blocks.forEach(block => observer.observe(block));
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyAXb5k4WAUbXI3zlXt-J0jPprO837zr8v8",
+    authDomain: "toiinvite2025.firebaseapp.com",
+    databaseURL: "https://toiinvite2025-default-rtdb.firebaseio.com",
+    projectId: "toiinvite2025",
+    storageBucket: "toiinvite2025.appspot.com",
+    messagingSenderId: "228773799390",
+    appId: "1:228773799390:web:2ae10163590ff87e1c294f",
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const btnYes = document.getElementsByClassName("btn-yes");
+  const btnNo = document.getElementsByClassName("btn-no");
+  const params = new URLSearchParams(location.search);
+  let inviteId = params.get("invite");
+  const isNamed = !!inviteId;
+
+  const guestNameInput = document.getElementById("guestName");
+  const nameBlock = document.getElementById("nameBlock");
+  const form = document.getElementById("rsvpForm");
+  const greeting = document.getElementById("guestGreeting");
+  const submitCome = document.getElementById("submitCome");
+
+  if (isNamed) {
+    firebase
+      .database()
+      .ref("invites/" + inviteId)
+      .once("value")
+      .then((snapshot) => {
+        const data = snapshot.val();
+        if (
+          data &&
+          Array.isArray(data.guests) &&
+          data.guests.length > 0
+        ) {
+          const isKazakh = document.documentElement.lang === "kk";
+          const namesText = data.guests.join(", ");
+          guestsKz1 = guestsKz2 = `Құрметті ${namesText}!`;
+          guestsRu1 = guestsRu2 = `Уважаемый(-ые) ${namesText}!`;
+          greeting.innerText = isKazakh ? `${guestsKz1}` : `${guestsRu1}`;
+          submitCome.innerText = isKazakh ? `${guestsKz2} ` : `${guestsRu2} `;
+          nameBlock.style.display = "none";
+        }
+      });
+  }
+
+  btnYes[0].addEventListener("click", () => {
+    sendRSVP("yes")
+  });
+  btnNo[0].addEventListener("click", () => {
+    sendRSVP("no");
+  });
+
+  function sendRSVP(status) {
+    const name = isNamed ? "" : guestNameInput.value.trim();
+
+    if (!isNamed && name === "") {
+      alert("Атыңызды енгізіңіз");
+      return;
+    } else if (isNamed) {
+      const updateData = {
+        status,
+        respondedAt: new Date().toISOString(),
+      };
+      updateData.type = "named";
+      firebase
+        .database()
+        .ref("invites/" + inviteId)
+        .update(updateData)
+        .then(() => {
+          form.style.display = "none";
+          if (status === "yes") {
+            thanksMsg.style.display = "block";
+          } else {
+            sorryMsg.style.display = "block";
+          }
+        });
+    } else {
+      document.getElementById("rsvpForm").style.display = "none";
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      if (status === "yes") document.getElementById("thanksMsg").style.display = "block";
+      else if (status === "no") document.getElementById("sorryMsg").style.display = "block";
+      inviteId = Math.random().toString(36).substr(2, 9)
+      const updateData = {
+        status,
+        respondedAt: new Date().toISOString(),
+      };
+
+      if (!isNamed && name !== "") {
+        updateData.guests = firebase.database.ServerValue.arrayUnion
+          ? firebase.database.ServerValue.arrayUnion(name)
+          : [name]; // Fallback для совместимости
+        updateData.type = "unnamed";
+      }
+
+      firebase
+        .database()
+        .ref("invites/" + inviteId)
+        .update(updateData)
+        .then(() => {
+          form.style.display = "none";
+          if (status === "yes") {
+            thanksMsg.style.display = "block";
+          } else {
+            sorryMsg.style.display = "block";
+          }
+        });
+    }
+  }
 })

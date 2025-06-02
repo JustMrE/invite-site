@@ -37,7 +37,7 @@
       </div>
     </section> -->
 
-    
+
     <section class="section" id="eventDescription">
       <div class="rainbow-overlay">
         <svg
@@ -230,8 +230,7 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const params = new URLSearchParams(location.search);
-        const inviteId =
-          params.get("invite") ?? Math.random().toString(36).substr(2, 9);
+        const inviteId = params.get("invite") ?? Math.random().toString(36).substr(2, 9);
         const isNamed = !!inviteId;
 
         const guestNameInput = document.getElementById("guestName");
