@@ -7,32 +7,40 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <style>
+      .status-yes {
+        background-color: #d4edda;
+        color: #155724;
+        font-weight: bold;
+      }
+      .status-no {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: bold;
+      }
+      .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+        font-weight: bold;
+      }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
       <a class="navbar-brand" href="#">Пригласительные</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-3">
-          <li class="nav-item">
-            <a class="nav-link active" href="create.html">Отправить</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="guests.html">Список гостей</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="invites.html">Список приглашений</a>
-          </li>
-        </ul>
-      </div>
+      <ul class="navbar-nav ms-3">
+        <li class="nav-item">
+          <a class="nav-link" href="create.html">Отправить</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="guests.html">Список гостей</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="invites.html">Список приглашений</a>
+        </li>
+      </ul>
     </nav>
 
     <main class="container mt-4">
@@ -50,33 +58,79 @@
       </table>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      const sheetUrl =
-        "https://script.google.com/macros/s/AKfycbxfNTanfQH3eoCAoW4CErPmk6kh5BT5l3ZwMyJa9nnDxXFCCl6PwCJFKak8HXRQV9MxLg/exec";
+      // Инициализация Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAXb5k4WAUbXI3zlXt-J0jPprO837zr8v8",
+        authDomain: "toiinvite2025.firebaseapp.com",
+        databaseURL: "https://toiinvite2025-default-rtdb.firebaseio.com",
+        projectId: "toiinvite2025",
+        storageBucket: "toiinvite2025.appspot.com",
+        messagingSenderId: "228773799390",
+        appId: "1:228773799390:web:2ae10163590ff87e1c294f",
+      };
+      firebase.initializeApp(firebaseConfig);
 
-      fetch(sheetUrl)
-        .then((res) => res.json())
-        .then((data) => {
-          const tbody = document.getElementById("guestTableBody");
-          data.forEach((row) => {
-            const tr = document.createElement("tr");
+      const db = firebase.database();
+      const tbody = document.getElementById("guestTableBody");
 
-            const type = row["Invite ID"] ? "Именной" : "Неименной";
-            const status =
-              row["Статус"] === "yes"
-                ? "Қатысады"
-                : row["Статус"] === "no"
-                ? "Қатыспайды"
-                : "Жауап жоқ";
+      // Загружаем все приглашения
+      db.ref("invites")
+        .once("value")
+        .then((snapshot) => {
+          const data = snapshot.val() || {};
+          Object.entries(data).forEach(([inviteId, invite]) => {
+            const guests = invite.guests || [];
+            const created = new Date(invite.created).toLocaleString();
+            const status = invite.status || "pending";
 
-            tr.innerHTML = `
-            <td>${row["Дата"]}</td>
-            <td>${row["Имя"] || "—"}</td>
-            <td>${type}</td>
-            <td>${status}</td>
+            let statusText, statusClass;
+            switch (status) {
+              case "yes":
+                statusText = "Қатысады";
+                statusClass = "status-yes";
+                break;
+              case "no":
+                statusText = "Қатыспайды";
+                statusClass = "status-no";
+                break;
+              default:
+                statusText = "Жауап жоқ";
+                statusClass = "status-pending";
+                break;
+            }
+
+            const typeText = guests.length > 0 ? "Именной" : "Неименной";
+
+            if (guests.length === 0) {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+          <td>${created}</td>
+          <td>—</td>
+          <td>${typeText}</td>
+          <td>
+            <p class="${statusClass}">
+              ${statusText}
+            </p>
+          </td>
+        `;
+              tbody.appendChild(tr);
+            } else {
+              guests.forEach((name) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+            <td>${created}</td>
+            <td>${name}</td>
+            <td>${typeText}</td>
+            <td>
+            <p class="${statusClass}">
+              ${statusText}
+            </p>
+          </td>
           `;
-            tbody.appendChild(tr);
+                tbody.appendChild(tr);
+              });
+            }
           });
         });
     </script>

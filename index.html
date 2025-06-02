@@ -23,12 +23,13 @@
         Қазақша / Русский
       </button>
     </div>
+
     <header>
       <h1 id="mainTitle">Тойға шақыру</h1>
     </header>
 
     <section class="section" id="eventDescription">
-      <h2 id="guestGreeting">Құрметті қонақтар:</h2>
+      <h2 id="guestGreeting">Құрметті қонақтар!</h2>
       <p>Сізді біздің қуанышымызға ортақтасуға шақырамыз:</p>
       <ul>
         <li>Қызымыздың 7 жасқа толып, мектепке баруы — Тілашар</li>
@@ -45,24 +46,9 @@
         >
           <defs>
             <radialGradient id="cloudGradient" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-              <stop offset="100%" stop-color="#e0e0e0" stop-opacity="1" />
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="100%" stop-color="#e0e0e0" />
             </radialGradient>
-            <filter
-              id="cloudShadow"
-              x="-50%"
-              y="-50%"
-              width="200%"
-              height="200%"
-            >
-              <feDropShadow
-                dx="2"
-                dy="4"
-                stdDeviation="4"
-                flood-color="#000"
-                flood-opacity="0.2"
-              />
-            </filter>
           </defs>
 
           <g class="rainbow-group">
@@ -80,7 +66,6 @@
             <ellipse cx="130" cy="240" rx="35" ry="20" />
             <ellipse cx="150" cy="255" rx="45" ry="25" />
           </g>
-
           <g class="cloudShape">
             <ellipse cx="490" cy="250" rx="40" ry="25" />
             <ellipse cx="470" cy="240" rx="35" ry="20" />
@@ -102,19 +87,11 @@
 
     <section class="section" id="rsvp">
       <h2 id="submitCome">Қатысатыныңызды растаңыз</h2>
-
       <form id="rsvpForm" class="needs-validation" novalidate>
-        <div class="mb-3">
-          <label id="guestNameLabel" class="form-label">Сіздің атыңыз:</label>
-          <input
-            type="text"
-            class="form-control"
-            id="guestName"
-            placeholder="Атыңыз"
-            required
-          />
+        <div class="mb-3" id="nameBlock">
+          <label class="form-label">Сіздің атыңыз:</label>
+          <input type="text" class="form-control" id="guestName" required />
         </div>
-
         <button type="submit" class="btn btn-success">Қатысамын</button>
         <button
           type="button"
@@ -124,7 +101,6 @@
           Қатыспаймын
         </button>
       </form>
-
       <p id="thanksMsg" class="mt-3 text-success fw-bold" style="display: none">
         Рақмет, күтеміз!
       </p>
@@ -132,86 +108,6 @@
         Қап, өкінішті. Келесі жолы!
       </p>
     </section>
-
-    <!-- <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const inviteId = new URLSearchParams(window.location.search).get(
-          "invite"
-        );
-        const allInvites = JSON.parse(localStorage.getItem("invites") || "[]");
-        const invite = allInvites.find((i) => i.id === inviteId);
-
-        const form = document.getElementById("rsvpForm");
-        const guestNameInput = document.getElementById("guestName");
-        const guestNameLabel = document.getElementById("guestNameLabel");
-        const nameInputBlock = guestNameInput?.closest(".mb-3");
-        const greeting = document.getElementById("guestGreeting");
-        const heading = document.querySelector("#rsvp h2");
-        const thanksMsg = document.getElementById("thanksMsg");
-        const sorryMsg = document.getElementById("sorryMsg");
-
-        if (!invite) {
-          heading.innerText = "Қонақтар табылмады.";
-          form.style.display = "none";
-          return;
-        }
-
-        // Определяем: именной ли пригласительный
-        const isNamedInvite =
-          Array.isArray(invite.guests) &&
-          invite.guests.some((name) => name.trim().length > 0);
-
-        // Отображаем заголовок и поле ввода
-        if (isNamedInvite) {
-          const namesText = invite.guests
-            .filter((name) => name.trim().length > 0)
-            .join(", ");
-          greeting.innerText = `Құрметті ${namesText}!`;
-          heading.innerText = `Құрметті ${namesText}! Қатысатыныңызды растаңыз`;
-          if (nameInputBlock) nameInputBlock.style.display = "none";
-        } else {
-          greeting.innerText = `Құрметті қонақтар!`;
-          heading.innerText = "Құрметті қонақ! Қатысатыныңызды растаңыз";
-          if (nameInputBlock) nameInputBlock.style.display = "block";
-        }
-
-        // Обработка уже отправленного ответа
-        if (invite.status === "yes") {
-          form.style.display = "none";
-          thanksMsg.style.display = "block";
-        } else if (invite.status === "no") {
-          form.style.display = "none";
-          sorryMsg.style.display = "block";
-        }
-
-        // Обработка подтверждения "Қатысамын"
-        form.addEventListener("submit", function (e) {
-          e.preventDefault();
-          invite.status = "yes";
-
-          if (!isNamedInvite) {
-            invite.respondedName = guestNameInput.value.trim();
-          }
-
-          localStorage.setItem("invites", JSON.stringify(allInvites));
-          form.style.display = "none";
-          thanksMsg.style.display = "block";
-        });
-
-        // Обработка отказа "Қатыспаймын"
-        window.denyAttendance = function () {
-          invite.status = "no";
-
-          if (!isNamedInvite) {
-            invite.respondedName = guestNameInput.value.trim();
-          }
-
-          localStorage.setItem("invites", JSON.stringify(allInvites));
-          form.style.display = "none";
-          sorryMsg.style.display = "block";
-        };
-      });
-    </script> -->
 
     <section class="section" id="countdown">
       <h2>Қалған уақыт</h2>
@@ -235,37 +131,57 @@
       </div>
     </section>
 
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAXb5k4WAUbXI3zlXt-J0jPprO837zr8v8",
+        authDomain: "toiinvite2025.firebaseapp.com",
+        databaseURL: "https://toiinvite2025-default-rtdb.firebaseio.com",
+        projectId: "toiinvite2025",
+        storageBucket: "toiinvite2025.appspot.com",
+        messagingSenderId: "228773799390",
+        appId: "1:228773799390:web:2ae10163590ff87e1c294f",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+    </script>
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const params = new URLSearchParams(location.search);
-        const inviteId = params.get("invite");
+        const inviteId =
+          params.get("invite") ?? Math.random().toString(36).substr(2, 9);
         const isNamed = !!inviteId;
 
         const guestNameInput = document.getElementById("guestName");
-        const nameInputBlock = guestNameInput.closest(".mb-3");
+        const nameBlock = document.getElementById("nameBlock");
         const form = document.getElementById("rsvpForm");
         const thanksMsg = document.getElementById("thanksMsg");
         const sorryMsg = document.getElementById("sorryMsg");
-
         const greeting = document.getElementById("guestGreeting");
         const submitCome = document.getElementById("submitCome");
 
-        // Скрываем поле имени, если приглашение именное
         if (isNamed) {
-          // Получаем список гостей по inviteId из Google Таблицы
-          fetch(
-            `https://script.google.com/macros/s/AKfycbxfNTanfQH3eoCAoW4CErPmk6kh5BT5l3ZwMyJa9nnDxXFCCl6PwCJFKak8HXRQV9MxLg/exec?invite=${inviteId}`
-          )
-            .then((res) => res.text())
-            .then((names) => {
-              names = names.trim();
-              greeting.innerText = `Құрметті ${names}!`;
-              submitCome.innerText = `Құрметті ${names}! Қатысатыныңызды растаңыз.`;
+          firebase
+            .database()
+            .ref("invites/" + inviteId)
+            .once("value")
+            .then((snapshot) => {
+              const data = snapshot.val();
+              if (
+                data &&
+                Array.isArray(data.guests) &&
+                data.guests.length > 0
+              ) {
+                const namesText = data.guests.join(", ");
+                greeting.innerText = `Құрметті ${namesText}!`;
+                submitCome.innerText = `Құрметті ${namesText}! Қатысатыныңызды растаңыз.`;
+                nameBlock.style.display = "none";
+              }
             });
-
-          nameInputBlock.style.display = "none";
-        } else {
-          nameInputBlock.style.display = "block";
         }
 
         form.addEventListener("submit", function (e) {
@@ -273,40 +189,41 @@
           sendRSVP("yes");
         });
 
-        window.denyAttendance = function () {
+        window.denyAttendance = function (e) {
           sendRSVP("no");
         };
 
         function sendRSVP(status) {
-          const name = isNamed
-            ? "" // в будущем можно вставить имя из invite
-            : guestNameInput.value.trim();
+          const name = isNamed ? "" : guestNameInput.value.trim();
 
           if (!isNamed && name === "") {
             alert("Атыңызды енгізіңіз");
             return;
-          }
+          } else {
+            const updateData = {
+              status,
+              respondedAt: new Date().toISOString(),
+            };
 
-          fetch(
-            "https://script.google.com/macros/s/AKfycbxfNTanfQH3eoCAoW4CErPmk6kh5BT5l3ZwMyJa9nnDxXFCCl6PwCJFKak8HXRQV9MxLg/exec",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                type: "rsvp",
-                inviteId: inviteId || "",
-                name,
-                status,
-              }),
+            if (!isNamed && name !== "") {
+              updateData.guests = firebase.database.ServerValue.arrayUnion
+                ? firebase.database.ServerValue.arrayUnion(name)
+                : [name]; // Fallback для совместимости
             }
-          ).then(() => {
-            form.style.display = "none";
-            if (status === "yes") {
-              thanksMsg.style.display = "block";
-            } else {
-              sorryMsg.style.display = "block";
-            }
-          });
+
+            firebase
+              .database()
+              .ref("invites/" + inviteId)
+              .update(updateData)
+              .then(() => {
+                form.style.display = "none";
+                if (status === "yes") {
+                  thanksMsg.style.display = "block";
+                } else {
+                  sorryMsg.style.display = "block";
+                }
+              });
+          }
         }
       });
     </script>
