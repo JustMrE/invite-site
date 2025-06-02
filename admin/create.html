@@ -99,7 +99,7 @@
         // Если имена не указаны — просто выводим общий URL без записи в базу
         if (guestNames.length === 0) {
           const url = `index.html`;
-          const adr = `${location.origin}/${url}`;
+          const adr = `${location.origin}/invite-site/${url}`;
           resultDiv.innerHTML = `
       <h4>Сгенерирован неименной пригласительный:</h4>
       <div class="input-group">
@@ -119,7 +119,7 @@
           })
           .then(() => {
             const url = `index.html?invite=${inviteId}`;
-            const adr = `${location.origin}/${url}`;
+            const adr = `${location.origin}/invite-site/${url}`;
             resultDiv.innerHTML = `
         <h4>Сгенерирован именной пригласительный:</h4>
         <div class="input-group">
