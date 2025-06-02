@@ -78,8 +78,8 @@
             const guests = (data.guests || []).join(", ");
             const link =
               data.guests && data.guests.length > 0
-                ? `${location.origin}/index.html?invite=${id}`
-                : `${location.origin}/index.html`;
+                ? `${location.origin}/invite-site/index.html?invite=${id}`
+                : `${location.origin}/invite-site/index.html`;
 
             const row = document.createElement("tr");
             row.innerHTML = `
