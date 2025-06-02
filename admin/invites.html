@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Список приглашений</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+      <a class="navbar-brand" href="#">Пригласительные</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-3">
+          <li class="nav-item">
+            <a class="nav-link" href="create.html">Отправить</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="guests.html">Список гостей</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="invites.html"
+              >Список приглашений</a
+            >
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="container mt-4">
+      <h2>📨 Список приглашений</h2>
+      <div id="invitesList" class="mt-3"></div>
+    </main>
+
+    <script>
+      const fetchUrl =
+        "https://script.google.com/macros/s/AKfycbxfNTanfQH3eoCAoW4CErPmk6kh5BT5l3ZwMyJa9nnDxXFCCl6PwCJFKak8HXRQV9MxLg/exec";
+
+      fetch(fetchUrl)
+        .then((res) => res.json())
+        .then((invites) => {
+          const container = document.getElementById("invitesList");
+          if (!invites.length) {
+            container.innerHTML = "<p>Нет приглашений</p>";
+            return;
+          }
+
+          invites.forEach((row, i) => {
+            const isNamed = row["Гости"].trim() !== "";
+            const guestsText = isNamed ? row["Гости"] : "<em>Неименной</em>";
+            const url = isNamed
+              ? `https://toisait.kz/index.html?invite=${row["Invite ID"]}`
+              : `https://toisait.kz/index.html`;
+
+            const status =
+              row["Статус"] === "yes"
+                ? "✅ Придут"
+                : row["Статус"] === "no"
+                ? "❌ Не придут"
+                : "⏳ Без ответа";
+
+            const card = document.createElement("div");
+            card.className = "card mb-3";
+            card.innerHTML = `
+        <div class="card-body">
+          <h5 class="card-title">Пригласительный #${i + 1}</h5>
+          <p class="card-text"><strong>Гости:</strong> ${guestsText}</p>
+          <p class="card-text"><strong>Статус:</strong> ${status}</p>
+          <a href="${url}" target="_blank" class="btn btn-primary">Открыть</a>
+        </div>
+      `;
+            container.appendChild(card);
+          });
+        });
+
+      function doGet() {
+        const sheet =
+          SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+            "Пригласительные"
+          );
+        const data = sheet.getDataRange().getValues();
+        const headers = data[0];
+        const rows = data.slice(1);
+
+        const json = rows.map((row) => {
+          const obj = {};
+          headers.forEach((h, i) => (obj[h] = row[i]));
+          return obj;
+        });
+
+        return ContentService.createTextOutput(
+          JSON.stringify(json)
+        ).setMimeType(ContentService.MimeType.JSON);
+      }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
