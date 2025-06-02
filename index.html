@@ -29,15 +29,6 @@
     </header>
 
     <section class="section" id="eventDescription">
-      <h2 id="guestGreeting">Құрметті қонақтар!</h2>
-      <p>Сізді біздің қуанышымызға ортақтасуға шақырамыз:</p>
-      <ul>
-        <li>Қызымыздың 7 жасқа толып, мектепке баруы — Тілашар</li>
-        <li>Ұлымыздың сүндетке отырғызуы</li>
-        <li>Кішкентай ханшайымымыздың дүниеге келуі — Бесік той</li>
-      </ul>
-      <p><strong>Той иелері:</strong> Бауржан, Қамар</p>
-
       <div class="rainbow-overlay">
         <svg
           class="rainbow-svg"
@@ -73,16 +64,83 @@
           </g>
         </svg>
       </div>
+
+      <h2 id="guestGreeting">Құрметті қонақтар!</h2>
+      <p>Сіздерді біздің қуанышымызға ортақтасуға шақырамыз:</p>
+      <ul>
+        <li>Қызымыздың 7 жасқа толып, мектепке баруы — Тілашар</li>
+        <li>Ұлымыздың сүндетке отырғызуы</li>
+        <li>Кішкентай ханшайымымыздың дүниеге келуі — Бесік той</li>
+      </ul>
+      <p><strong>Той иелері:</strong> Бауржан, Қамар</p>
     </section>
 
-    <section class="section" id="eventDetails">
-      <h2>Кездесу орны мен уақыты</h2>
-      <p><strong>15 маусым 2025, 14:00</strong></p>
-      <p>Ресторан "Алтын Ел", пр. Дулати 55</p>
-      <iframe
-        class="map"
-        src="https://widgets.2gis.com/widget?type=firm&regionId=56&firmId=70000001025292888"
-      ></iframe>
+    <section class="section">
+      <div id="eventDetails">
+        <h2>Кездесу орны мен уақыты</h2>
+        <p><strong>15 маусым 2025, 14:00</strong></p>
+        <p>Ресторан "Алтын Ел", пр. Дулати 55</p>
+      </div>
+
+      <!-- Кнопка/ссылка с иконкой -->
+      <div class="mb-3 text-center">
+        <a
+          href="https://2gis.kz/almaty/firm/70000001025292888"
+          target="_blank"
+          class="btn btn-outline-success d-inline-flex align-items-center"
+          style="gap: 0.5rem"
+        >
+          <img
+            src="https://upload.wikimedia.org/wikipedia/ru/7/77/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_2%D0%93%D0%98%D0%A1.svg"
+            alt="2GIS"
+            width="60"
+            height="24"
+          />
+          Открыть в 2ГИС
+        </a>
+      </div>
+
+      <!-- Стандартные ссылки -->
+      <a
+        class="dg-widget-link"
+        href="http://2gis.kz/almaty/firm/70000001025292888/center/76.89173340797426,43.16542782353295/zoom/17?utm_medium=widget-source&utm_campaign=firmsonmap&utm_source=bigMap"
+      >
+        Посмотреть на карте Алматы
+      </a>
+      <div class="dg-widget-link">
+        <a
+          href="http://2gis.kz/almaty/firm/70000001025292888/photos/70000001025292888/center/76.89173340797426,43.16542782353295/zoom/17?utm_medium=widget-source&utm_campaign=firmsonmap&utm_source=photos"
+        >
+          Фотографии компании
+        </a>
+      </div>
+      <div class="dg-widget-link">
+        <a
+          href="http://2gis.kz/almaty/center/76.891566,43.165175/zoom/17/routeTab/rsType/bus/to/76.891566,43.165175╎Алтын Ел, ресторанный комплекс?utm_medium=widget-source&utm_campaign=firmsonmap&utm_source=route"
+        >
+          Найти проезд до Алтын Ел, ресторанный комплекс
+        </a>
+      </div>
+
+      <!-- Встраиваемый виджет -->
+      <script
+        charset="utf-8"
+        src="https://widgets.2gis.com/js/DGWidgetLoader.js"
+      ></script>
+      <script charset="utf-8">
+        new DGWidgetLoader({
+          width: "100%",
+          height: 300,
+          borderColor: "#a3a3a3",
+          pos: { lat: 43.16542782353295, lon: 76.89173340797426, zoom: 17 },
+          opt: { city: "almaty" },
+          org: [{ id: "70000001025292888" }],
+        });
+      </script>
+      <noscript style="color: #c00; font-size: 16px; font-weight: bold">
+        Виджет карты использует JavaScript. Включите его в настройках вашего
+        браузера.
+      </noscript>
     </section>
 
     <section class="section" id="rsvp">

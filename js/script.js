@@ -29,7 +29,43 @@ function toggleLang() {
   const description = document.querySelector("#eventDescription");
   if (description) {
     const content = isKazakh
-      ? `<h2>Дорогой гость!</h2>
+      ? `
+        <div class="rainbow-overlay">
+          <svg
+            class="rainbow-svg"
+            viewBox="0 0 600 300"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <radialGradient id="cloudGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#e0e0e0" />
+              </radialGradient>
+            </defs>
+
+            <g class="rainbow-group">
+              <path class="arc arc1" d="M100,250 A200,200 0 0,1 500,250" />
+              <path class="arc arc2" d="M110,250 A190,190 0 0,1 490,250" />
+              <path class="arc arc3" d="M120,250 A180,180 0 0,1 480,250" />
+              <path class="arc arc4" d="M130,250 A170,170 0 0,1 470,250" />
+              <path class="arc arc5" d="M140,250 A160,160 0 0,1 460,250" />
+              <path class="arc arc6" d="M150,250 A150,150 0 0,1 450,250" />
+              <path class="arc arc7" d="M160,250 A140,140 0 0,1 440,250" />
+            </g>
+
+            <g class="cloudShape">
+              <ellipse cx="110" cy="250" rx="40" ry="25" />
+              <ellipse cx="130" cy="240" rx="35" ry="20" />
+              <ellipse cx="150" cy="255" rx="45" ry="25" />
+            </g>
+            <g class="cloudShape">
+              <ellipse cx="490" cy="250" rx="40" ry="25" />
+              <ellipse cx="470" cy="240" rx="35" ry="20" />
+              <ellipse cx="450" cy="255" rx="45" ry="25" />
+            </g>
+          </svg>
+        </div>
+        <h2>Дорогие гости!</h2>
         <p>Приглашаем Вас разделить нашу радость:</p>
         <ul>
           <li>7-летие нашей дочери и её поступление в школу — Тілашар</li>
@@ -54,14 +90,12 @@ function toggleLang() {
   const details = document.querySelector("#eventDetails");
   if (details) {
     const content = isKazakh
-      ? `<h2>Дата и место</h2>
+      ? `<h2>Место и время проведения мероприятия</h2>
         <p><strong>15 июня 2025, 14:00</strong></p>
-        <p>Ресторан "Алтын Ел", пр. Дулати 55</p>
-        <iframe class='map' src='https://widgets.2gis.com/widget?type=firm&regionId=56&firmId=70000001025292888'></iframe>`
+        <p>Ресторан "Алтын Ел", пр. Дулати 55</p>`
       : `<h2>Кездесу орны мен уақыты</h2>
         <p><strong>15 маусым 2025, 14:00</strong></p>
-        <p>Ресторан "Алтын Ел", пр. Дулати 55</p>
-        <iframe class='map' src='https://widgets.2gis.com/widget?type=firm&regionId=56&firmId=70000001025292888'></iframe>`;
+        <p>Ресторан "Алтын Ел", пр. Дулати 55</p>`;
     details.innerHTML = content;
   }
 
