@@ -1,3 +1,18 @@
+html,
+body {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  html,
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+}
+
 body {
   font-family: 'Pacifico', cursive;
   background: linear-gradient(to bottom, #fff6f6, #fce8ff);
