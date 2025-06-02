@@ -1,7 +1,7 @@
 body {
   font-family: 'El Messiri', sans-serif;
   margin: 0;
-  background-image: url('../img/bg-pattern6.png');
+  background-image: url('../img/bg-pattern.webp');
   background-repeat: no-repeat;
   background-size: cover;
   background-color: #fffaf2;
@@ -108,39 +108,6 @@ header h1 {
 .ornament-border {
   padding: 0;
 }
-
-/* .ornament-border {
-  position: relative;
-  padding: 2rem;
-  background-color: #fffdf8;
-  border: 20px solid transparent;
-
-  background-image:
-    url('../img/ornament-h.png'),
-    url('../img/ornament-border.png'),
-    url('../img/ornament-h.png'),
-    url('../img/ornament-border.png');
-
-  background-repeat:
-    repeat-x,
-    repeat-y,
-    repeat-x,
-    repeat-y;
-
-  background-position:
-    top left,
-    top right,
-    bottom left,
-    top left;
-
-  background-size:
-    auto 20px,
-    20px auto,
-    auto 20px,
-    20px auto;
-
-  box-sizing: border-box;
-} */
 
 .topimage {
   width: auto;
@@ -324,4 +291,21 @@ button.no {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.greeting {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.greeting-3 {
+  flex-direction: row;
+  justify-content: center;
+}
+
+.invite-icon {
+  width: 70px;
+  height: auto;
 }
