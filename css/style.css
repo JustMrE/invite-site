@@ -2,10 +2,16 @@ body {
   font-family: 'El Messiri', sans-serif;
   margin: 0;
   background-image: url('../img/bg-pattern.webp');
-  background-repeat: no-repeat;
+  background-repeat: repeat-y;
   background-size: cover;
   background-color: #fffaf2;
   color: #3b1f14;
+}
+
+@media (max-width: 1440px) {
+  body {
+    background-size: contain;
+  }
 }
 
 .lang-toggle {
