@@ -197,6 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .once("value")
       .then((snapshot) => {
         const data = snapshot.val();
+        const greetingText = document.getElementById("lang-1");
         if (data && Array.isArray(data.guests) && data.guests.length > 0) {
           if (data.guests.length <= 2) {
             oneGuest = true;
@@ -210,11 +211,11 @@ document.addEventListener("DOMContentLoaded", () => {
           greeting.innerText = isKazakh ? `${guestsKz1}` : `${guestsRu1}`;
           submitCome.innerText = isKazakh ? `${guestsKz2} ` : `${guestsRu2} `;
           nameBlock.style.display = "none";
-          document.getElementById("lang-1").innerHTML = isKazakh
-            ? "Приглашаем Вас стать почётным гостем за нашим ақ дастархан, посвящённым празднику наших внуков!"
-            : `${
+          greetingText.innerText = isKazakh
+            ? `${
                 oneGuest ? "Сізді" : "Сіздерді"
-              } немерелеріміздің тойларына арналған ақ дастарханымыздың қадірменді қонағы болуға шақырамыз!`;
+              } немерелеріміздің тойларына арналған ақ дастарханымыздың қадірменді қонағы болуға шақырамыз!`
+            : "Приглашаем Вас стать почётным гостем за нашим ақ дастархан, посвящённым празднику наших внуков!";
         }
       });
   }
