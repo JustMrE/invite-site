@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = snapshot.val();
         const greetingText = document.getElementById("lang-1");
         if (data && Array.isArray(data.guests) && data.guests.length > 0) {
-          if (data.guests.length <= 2) {
+          if (data.guests.length < 2) {
             oneGuest = true;
           }
           const isKazakh = document.documentElement.lang === "kk";
