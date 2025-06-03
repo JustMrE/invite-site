@@ -210,6 +210,11 @@ document.addEventListener("DOMContentLoaded", () => {
           greeting.innerText = isKazakh ? `${guestsKz1}` : `${guestsRu1}`;
           submitCome.innerText = isKazakh ? `${guestsKz2} ` : `${guestsRu2} `;
           nameBlock.style.display = "none";
+          document.getElementById("lang-1").innerHTML = isKazakh
+            ? "Приглашаем Вас стать почётным гостем за нашим ақ дастархан, посвящённым празднику наших внуков!"
+            : `${
+                oneGuest ? "Сізді" : "Сіздерді"
+              } немерелеріміздің тойларына арналған ақ дастарханымыздың қадірменді қонағы болуға шақырамыз!`;
         }
       });
   }
