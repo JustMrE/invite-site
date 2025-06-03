@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const namesText = data.guests.join(", ");
           guestsKz1 = guestsKz2 = `Құрметті ${namesText}!`;
           guestsRu1 = guestsRu2 = `${
-            oneGuest ? "Уважаемый" : "Уважаемые"
+            oneGuest ? "Уважаемый(-ая)" : "Уважаемые"
           } ${namesText}!`;
           greeting.innerText = isKazakh ? `${guestsKz1}` : `${guestsRu1}`;
           submitCome.innerText = isKazakh ? `${guestsKz2} ` : `${guestsRu2} `;
