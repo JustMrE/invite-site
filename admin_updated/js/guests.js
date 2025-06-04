@@ -215,12 +215,12 @@ function renderGuests() {
 }
 
 function openInvite(id) {
-  const link = `${baseLink}/invite.html?invite=${id}`;
+  const link = `${baseLink}/index.html?invite=${id}`;
   window.open(link, "_blank");
 }
 
 function shareInvite(id) {
-  const link = `${baseLink}/invite.html?invite=${id}`;
+  const link = `${baseLink}/index.html?invite=${id}`;
   navigator.share
     ? navigator.share({ title: "Приглашение", url: link })
     : prompt("Скопируйте ссылку:", link);
