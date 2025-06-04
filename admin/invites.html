@@ -2,11 +2,37 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Список приглашений</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <style>
+      .guest-input {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: grab;
+      }
+      .guest-input .drag-handle {
+        cursor: grab;
+        user-select: none;
+      }
+      @media (max-width: 576px) {
+        td,
+        th {
+          font-size: 0.875rem;
+        }
+        .btn-sm {
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+        }
+        .form-select {
+          font-size: 0.875rem;
+        }
+      }
+    </style>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
@@ -30,22 +56,68 @@
 
     <main class="container mt-4">
       <h2>📨 Список созданных приглашений</h2>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Дата</th>
-            <th>ID</th>
-            <th>Гости</th>
-            <th>Ссылка</th>
-          </tr>
-        </thead>
-        <tbody id="invitesTableBody"></tbody>
-      </table>
+      <div class="mb-3">
+        <label>Сортировать по:</label>
+        <select id="sortSelect" class="form-select w-auto d-inline-block ms-2">
+          <option value="created">Дате</option>
+          <option value="id">ID</option>
+          <option value="guests">Гостям</option>
+        </select>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>ID</th>
+              <th>Гости</th>
+              <th>Ссылка</th>
+              <th>Действие</th>
+            </tr>
+          </thead>
+          <tbody id="invitesTableBody"></tbody>
+        </table>
+      </div>
     </main>
+
+    <!-- Модальное окно -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Редактировать приглашение</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Закрыть"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>ID:</strong> <span id="modalInviteId"></span></p>
+            <div class="mb-2"><strong>Гости:</strong></div>
+            <div id="guestInputsContainer" class="mb-3"></div>
+            <button id="addGuestBtn" class="btn btn-secondary btn-sm mb-3">
+              Добавить гостя
+            </button>
+            <div class="d-flex justify-content-end">
+              <button id="saveInviteBtn" class="btn btn-success me-2">
+                Сохранить
+              </button>
+              <button id="deleteInviteBtn" class="btn btn-danger">
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <script>
       const firebaseConfig = {
@@ -58,39 +130,134 @@
         appId: "1:228773799390:web:2ae10163590ff87e1c294f",
       };
       firebase.initializeApp(firebaseConfig);
-    </script>
-
-    <script>
       const db = firebase.database();
+
+      const tableBody = document.getElementById("invitesTableBody");
+      const sortSelect = document.getElementById("sortSelect");
+      const modal = new bootstrap.Modal(document.getElementById("editModal"));
+      const modalInviteId = document.getElementById("modalInviteId");
+      const guestInputsContainer = document.getElementById(
+        "guestInputsContainer"
+      );
+      const deleteInviteBtn = document.getElementById("deleteInviteBtn");
+      const saveInviteBtn = document.getElementById("saveInviteBtn");
+      const addGuestBtn = document.getElementById("addGuestBtn");
+
+      let currentInviteId = null;
+      let currentRow = null;
+      let allInvites = [];
+
+      function renderGuestsInputs(guests = []) {
+        guestInputsContainer.innerHTML = "";
+        guests.forEach((name) => addGuestInput(name));
+      }
+
+      function addGuestInput(name = "") {
+        const div = document.createElement("div");
+        div.className = "input-group mb-2 guest-input";
+        div.innerHTML = `
+          <span class="input-group-text drag-handle">☰</span>
+          <input type="text" class="form-control" value="${name}" />
+          <button class="btn btn-outline-danger" type="button">✕</button>
+        `;
+        div.querySelector("button").onclick = () => div.remove();
+        guestInputsContainer.appendChild(div);
+      }
+
+      addGuestBtn.onclick = () => addGuestInput();
+
+      new Sortable(guestInputsContainer, {
+        handle: ".drag-handle",
+        animation: 150,
+      });
+
+      function openEditModal(id, data, row) {
+        currentInviteId = id;
+        currentRow = row;
+        modalInviteId.textContent = id;
+        renderGuestsInputs(data.guests || []);
+        modal.show();
+      }
+
+      deleteInviteBtn.onclick = () => {
+        if (!currentInviteId) return;
+        if (confirm("Удалить это приглашение?")) {
+          db.ref(`invites/${currentInviteId}`)
+            .remove()
+            .then(() => {
+              modal.hide();
+              if (currentRow) currentRow.remove();
+            })
+            .catch((err) => alert("Ошибка: " + err.message));
+        }
+      };
+
+      saveInviteBtn.onclick = () => {
+        const updatedGuests = Array.from(
+          guestInputsContainer.querySelectorAll("input")
+        )
+          .map((input) => input.value.trim())
+          .filter((name) => name !== "");
+
+        db.ref(`invites/${currentInviteId}/guests`)
+          .set(updatedGuests)
+          .then(() => {
+            const guestText = updatedGuests.join(", ");
+            currentRow.children[2].textContent = guestText || "—";
+            modal.hide();
+          })
+          .catch((err) => alert("Ошибка при сохранении: " + err.message));
+      };
+
+      function renderTable(invitesObj) {
+        tableBody.innerHTML = "";
+        const sorted = Object.entries(invitesObj).sort((a, b) => {
+          const [ida, aData] = a;
+          const [idb, bData] = b;
+          const field = sortSelect.value;
+          if (field === "created")
+            return (bData.created || 0) - (aData.created || 0);
+          if (field === "id") return ida.localeCompare(idb);
+          if (field === "guests")
+            return (aData.guests?.join() || "").localeCompare(
+              bData.guests?.join() || ""
+            );
+          return 0;
+        });
+
+        for (const [id, data] of sorted) {
+          const guests = (data.guests || []).join(", ");
+          const link =
+            data.guests && data.guests.length > 0
+              ? `${location.origin}/invite-site/index.html?invite=${id}`
+              : `${location.origin}/invite-site/index.html`;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${new Date(data.created).toLocaleString()}</td>
+            <td>${id}</td>
+            <td>${guests || "—"}</td>
+            <td>
+              <a href="${link}" target="_blank">Открыть</a>
+              <button class="btn btn-sm btn-outline-secondary ms-2" onclick="navigator.share ? navigator.share({ title: 'Приглашение', url: '${link}' }) : alert('Поддержка недоступна')">Поделиться</button>
+            </td>
+            <td><button class="btn btn-outline-primary btn-sm">Редактировать</button></td>
+          `;
+          row.querySelector(".btn-outline-primary").onclick = () =>
+            openEditModal(id, data, row);
+          tableBody.appendChild(row);
+        }
+      }
 
       db.ref("invites")
         .once("value")
         .then((snapshot) => {
-          const tableBody = document.getElementById("invitesTableBody");
-          const invites = snapshot.val();
-
-          if (!invites) {
-            tableBody.innerHTML = '<tr><td colspan="4">Нет данных</td></tr>';
-            return;
-          }
-
-          Object.entries(invites).forEach(([id, data]) => {
-            const guests = (data.guests || []).join(", ");
-            const link =
-              data.guests && data.guests.length > 0
-                ? `${location.origin}/invite-site/index.html?invite=${id}`
-                : `${location.origin}/invite-site/index.html`;
-
-            const row = document.createElement("tr");
-            row.innerHTML = `
-            <td>${new Date(data.created).toLocaleString()}</td>
-            <td>${id}</td>
-            <td>${guests || "—"}</td>
-            <td><a href="${link}" target="_blank">Открыть</a></td>
-          `;
-            tableBody.appendChild(row);
-          });
+          const invites = snapshot.val() || {};
+          allInvites = invites;
+          renderTable(invites);
         });
+
+      sortSelect.onchange = () => renderTable(allInvites);
     </script>
   </body>
 </html>

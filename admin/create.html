@@ -2,6 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Отправить пригласительное</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -11,7 +12,18 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
       <a class="navbar-brand" href="#">Пригласительные</a>
-      <div class="collapse navbar-collapse">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Переключить навигацию"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-3">
           <li class="nav-item">
             <a class="nav-link active" href="create.html">Отправить</a>
@@ -27,7 +39,7 @@
     </nav>
 
     <main class="container my-4">
-      <h2>📨 Отправка одного пригласительного на группу гостей</h2>
+      <h2 class="mb-3">📨 Отправка одного пригласительного на группу гостей</h2>
 
       <form class="mb-3">
         <div id="guestFields">
@@ -57,9 +69,9 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-      // Firebase config
       const firebaseConfig = {
         apiKey: "AIzaSyAXb5k4WAUbXI3zlXt-J0jPprO837zr8v8",
         authDomain: "toiinvite2025.firebaseapp.com",
@@ -70,9 +82,7 @@
         appId: "1:228773799390:web:2ae10163590ff87e1c294f",
       };
       firebase.initializeApp(firebaseConfig);
-    </script>
 
-    <script>
       function addGuestField() {
         const container = document.getElementById("guestFields");
         const div = document.createElement("div");
@@ -82,6 +92,38 @@
           <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">−</button>
         `;
         container.appendChild(div);
+      }
+
+      function resetGuestFields() {
+        const container = document.getElementById("guestFields");
+        container.innerHTML = `
+          <div class="input-group mb-2">
+            <input
+              type="text"
+              class="form-control guest-name-input"
+              placeholder="Имя гостя"
+            />
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              onclick="addGuestField()"
+            >
+              +
+            </button>
+          </div>`;
+      }
+
+      function shareLink(url) {
+        if (navigator.share) {
+          navigator
+            .share({
+              title: "Приглашение",
+              url: url,
+            })
+            .catch((err) => console.error("Ошибка при шаринге:", err));
+        } else {
+          alert("Ваш браузер не поддерживает функцию 'Поделиться'.");
+        }
       }
 
       function createInvite() {
@@ -101,12 +143,14 @@
           const url = `index.html`;
           const adr = `${location.origin}/invite-site/${url}`;
           resultDiv.innerHTML = `
-      <h4>Сгенерирован неименной пригласительный:</h4>
-      <div class="input-group">
-        <input type="text" class="form-control" value="${adr}" readonly>
-        <button class="btn btn-primary" onclick="window.open('${adr}', '_blank')">Открыть</button>
-      </div>
-    `;
+            <h4>Сгенерирован неименной пригласительный:</h4>
+            <div class="input-group mb-2">
+              <input type="text" class="form-control" value="${adr}" readonly>
+              <button class="btn btn-primary" onclick="window.open('${adr}', '_blank')">Открыть</button>
+              <button class="btn btn-outline-secondary" onclick="shareLink('${adr}')">Поделиться</button>
+            </div>
+          `;
+          resetGuestFields();
           return;
         }
 
@@ -122,12 +166,14 @@
             const url = `index.html?invite=${inviteId}`;
             const adr = `${location.origin}/invite-site/${url}`;
             resultDiv.innerHTML = `
-        <h4>Сгенерирован именной пригласительный:</h4>
-        <div class="input-group">
-          <input type="text" class="form-control" value="${adr}" readonly>
-          <button class="btn btn-primary" onclick="window.open('${adr}', '_blank')">Открыть</button>
-        </div>
-      `;
+              <h4>Сгенерирован именной пригласительный:</h4>
+              <div class="input-group mb-2">
+                <input type="text" class="form-control" value="${adr}" readonly>
+                <button class="btn btn-primary" onclick="window.open('${adr}', '_blank')">Открыть</button>
+                <button class="btn btn-outline-secondary" onclick="shareLink('${adr}')">Поделиться</button>
+              </div>
+            `;
+            resetGuestFields();
           });
       }
     </script>
