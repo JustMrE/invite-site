@@ -106,13 +106,35 @@ function renderGuests() {
     });
   });
 
+  // const searchTerm = searchInput.value.toLowerCase();
+  // let filtered = guestsFlat.filter((g) =>
+  //   g.guestName.toLowerCase().includes(searchTerm)
+  // );
+
   const searchTerm = searchInput.value.toLowerCase();
-  let filtered = guestsFlat.filter((g) =>
-    g.guestName.toLowerCase().includes(searchTerm)
-  );
+
+  let filtered;
+
+  if (groupGuestsToggle.checked) {
+    // Шаг 1: находим группы, где хотя бы один гость совпадает
+    const matchingGroupIds = new Set();
+
+    guestsFlat.forEach((g) => {
+      if (g.guestName.toLowerCase().includes(searchTerm)) {
+        matchingGroupIds.add(g.groupId);
+      }
+    });
+
+    // Шаг 2: берём всех гостей из найденных групп
+    filtered = guestsFlat.filter((g) => matchingGroupIds.has(g.groupId));
+  } else {
+    // Обычный поиск
+    filtered = guestsFlat.filter((g) =>
+      g.guestName.toLowerCase().includes(searchTerm)
+    );
+  }
 
   const sortKey = sortField.value;
-
   // Сортировка
   if (groupGuestsToggle.checked) {
     // Шаг 1: обычная сортировка по выбранному полю
@@ -184,40 +206,11 @@ function renderGuests() {
     if (columnVisibility.actions) {
       const td = document.createElement("td");
 
-      // const btnOpen = document.createElement("button");
-      // btnOpen.textContent = "Открыть";
-      // btnOpen.classList.add("btn", "btn-sm", "btn-primary");
-      // btnOpen.addEventListener("click", (guest) => {
-      //   openInvite(guest.groupId);
-      // });
-
-      // const btnSend = document.createElement("button");
-      // btnSend.textContent = "Поделиться";
-      // btnSend.classList.add("btn", "btn-sm", "btn-secondary");
-      // btnSend.addEventListener("click", (guest) => {
-      //   shareInvite(guest.groupId);
-      // });
-
-      // const btnEdit = document.createElement("button");
-      // btnEdit.textContent = "Редактировать";
-      // btnEdit.classList.add("btn", "btn-sm", "btn-warning");
-      // btnEdit.addEventListener("click", (guest) => {
-      //   editInvite(guest.groupId);
-      // });
-
-      // const cont = document.createElement("div");
-      // cont.classList.add("d-flex", "gap-1");
-      // cont.appendChild(btnOpen);
-      // cont.appendChild(btnSend);
-      // cont.appendChild(btnEdit);
-
-      // td.appendChild(cont);
-
       td.innerHTML = `
         <div class="d-flex gap-1">
           <button class="btn btn-sm btn-primary" onclick="openInvite('${guest.groupId}')">Открыть</button>
           <button class="btn btn-sm btn-secondary" onclick="shareInvite('${guest.groupId}')">Поделиться</button>
-          <button class="btn btn-sm btn-warning" onclick="openEditModal('${guest.groupId}')">Редактировать</button>
+          <button class="btn btn-sm btn-warning" onclick="editInvite('${guest.groupId}')">Редактировать</button>
         </div>`;
       tr.appendChild(td);
     }
@@ -229,37 +222,20 @@ function renderGuests() {
 }
 
 function openInvite(id) {
-  window.open`${location.origin}/invite.html?invite=${id}`, "_blank");
+  const link = `${location.origin}/invite.html?invite=${currentEditingId}`;
+  window.open(link, "_blank");
 }
 
 function shareInvite(id) {
-  const link = `${location.origin}/invite.html?invite=${currentEditingId}`;
+  const link = `${location.origin}/invite.html?invite=${id}`;
   navigator.share
     ? navigator.share({ title: "Приглашение", url: link })
     : prompt("Скопируйте ссылку:", link);
 }
 
-// function editInvite(id) {
-//   currentEditingId = id;
-//   const invite = invitesCache.find((i) => i.id === id); //[id];
-//   modalInviteId.value = id;
-//   guestInputsContainer.innerHTML = "";
-//   invite.guests.forEach((guest) => {
-//     const div = document.createElement("div");
-//     div.className = "input-group mb-2";
-//     div.innerHTML = `
-//       <input type="text" class="form-control" value="${guest}" />
-//       <button class="btn btn-outline-danger" type="button">✕</button>
-//     `;
-//     div.querySelector("button").onclick = () => div.remove();
-//     guestInputsContainer.appendChild(div);
-//   });
-//   editModal.show();
-// }
-
-function openEditModal(id) {
+function editInvite(id) {
   currentEditingId = id;
-  const data = invitesCache.find((i) => i.id === id); //[id];
+  const data = invitesCache.find((i) => i.id === id);
   modalInviteId.textContent = id;
   guestInputsContainer.innerHTML = "";
   (data.guests || []).forEach((name) => {
