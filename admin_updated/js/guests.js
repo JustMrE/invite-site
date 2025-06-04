@@ -183,11 +183,41 @@ function renderGuests() {
 
     if (columnVisibility.actions) {
       const td = document.createElement("td");
+
+      // const btnOpen = document.createElement("button");
+      // btnOpen.textContent = "Открыть";
+      // btnOpen.classList.add("btn", "btn-sm", "btn-primary");
+      // btnOpen.addEventListener("click", (guest) => {
+      //   openInvite(guest.groupId);
+      // });
+
+      // const btnSend = document.createElement("button");
+      // btnSend.textContent = "Поделиться";
+      // btnSend.classList.add("btn", "btn-sm", "btn-secondary");
+      // btnSend.addEventListener("click", (guest) => {
+      //   shareInvite(guest.groupId);
+      // });
+
+      // const btnEdit = document.createElement("button");
+      // btnEdit.textContent = "Редактировать";
+      // btnEdit.classList.add("btn", "btn-sm", "btn-warning");
+      // btnEdit.addEventListener("click", (guest) => {
+      //   editInvite(guest.groupId);
+      // });
+
+      // const cont = document.createElement("div");
+      // cont.classList.add("d-flex", "gap-1");
+      // cont.appendChild(btnOpen);
+      // cont.appendChild(btnSend);
+      // cont.appendChild(btnEdit);
+
+      // td.appendChild(cont);
+
       td.innerHTML = `
         <div class="d-flex gap-1">
-          <button class="btn btn-sm btn-primary" onclick="openInvite(${guest.groupId})">Открыть</button>
-          <button class="btn btn-sm btn-secondary" onclick="shareInvite(${guest.groupId})">Поделиться</button>
-          <button class="btn btn-sm btn-warning" onclick="editInvite(${guest.groupId})">Редактировать</button>
+          <button class="btn btn-sm btn-primary" onclick="openInvite('${guest.groupId}')">Открыть</button>
+          <button class="btn btn-sm btn-secondary" onclick="shareInvite('${guest.groupId}')">Поделиться</button>
+          <button class="btn btn-sm btn-warning" onclick="openEditModal('${guest.groupId}')">Редактировать</button>
         </div>`;
       tr.appendChild(td);
     }
@@ -203,20 +233,41 @@ function openInvite(id) {
 }
 
 function shareInvite(id) {
-  navigator.clipboard.writeText(`${location.origin}/invite.html?invite=${id}`);
-  alert("Ссылка скопирована!");
+  const link = `${location.origin}/invite.html?invite=${currentEditingId}`;
+  navigator.share
+    ? navigator.share({ title: "Приглашение", url: link })
+    : prompt("Скопируйте ссылку:", link);
 }
 
-function editInvite(id) {
+// function editInvite(id) {
+//   currentEditingId = id;
+//   const invite = invitesCache.find((i) => i.id === id); //[id];
+//   modalInviteId.value = id;
+//   guestInputsContainer.innerHTML = "";
+//   invite.guests.forEach((guest) => {
+//     const div = document.createElement("div");
+//     div.className = "input-group mb-2";
+//     div.innerHTML = `
+//       <input type="text" class="form-control" value="${guest}" />
+//       <button class="btn btn-outline-danger" type="button">✕</button>
+//     `;
+//     div.querySelector("button").onclick = () => div.remove();
+//     guestInputsContainer.appendChild(div);
+//   });
+//   editModal.show();
+// }
+
+function openEditModal(id) {
   currentEditingId = id;
-  const invite = invitesCache[id];
-  modalInviteId.value = id;
+  const data = invitesCache.find((i) => i.id === id); //[id];
+  modalInviteId.textContent = id;
   guestInputsContainer.innerHTML = "";
-  invite.guests.forEach((guest) => {
+  (data.guests || []).forEach((name) => {
     const div = document.createElement("div");
-    div.className = "input-group mb-2";
+    div.className = "input-group mb-2 guest-input";
     div.innerHTML = `
-      <input type="text" class="form-control" value="${guest.name}" />
+      <span class="input-group-text drag-handle">☰</span>
+      <input type="text" class="form-control" value="${name}" />
       <button class="btn btn-outline-danger" type="button">✕</button>
     `;
     div.querySelector("button").onclick = () => div.remove();
@@ -224,6 +275,11 @@ function editInvite(id) {
   });
   editModal.show();
 }
+
+new Sortable(guestInputsContainer, {
+  handle: ".drag-handle",
+  animation: 150,
+});
 
 addGuestBtn.onclick = () => {
   const div = document.createElement("div");
@@ -255,10 +311,10 @@ deleteInviteBtn.onclick = () => {
 };
 
 shareInviteBtn.onclick = () => {
-  navigator.clipboard.writeText(
-    `${location.origin}/invite.html?invite=${currentEditingId}`
-  );
-  alert("Ссылка скопирована!");
+  const link = `${location.origin}/invite.html?invite=${currentEditingId}`;
+  navigator.share
+    ? navigator.share({ title: "Приглашение", url: link })
+    : prompt("Скопируйте ссылку:", link);
 };
 
 searchInput.oninput = renderGuests;
