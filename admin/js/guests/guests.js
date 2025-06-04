@@ -1,5 +1,5 @@
 import { db } from "./firebase.js";
-import { createGuestRow, createGuestTableHeader } from "./ui/table.js";
+import { createGuestRow, createTableHeader } from "./ui/table.js";
 import { createAddGuestModal, openEditModal } from "./ui/modals.js";
 import { saveNewGuest, saveEditedGuest } from "./logic/guest-form.js";
 import { handleExcelImport } from "./logic/excel-import.js";
@@ -17,10 +17,10 @@ export function loadGuestsFromFirebase() {
 
     tbody.innerHTML = "";
     thead.innerHTML = "";
-    thead.appendChild(createGuestTableHeader(guestsFlat));
+    thead.appendChild(createTableHeader(guestsFlat[0] || {}));
 
     guestsFlat.forEach((guest, index) => {
-      const tr = createGuestRow(guest, index);
+      const tr = createGuestRow(index, guest.id, guest);
       enableGuestDragAndDrop(tr, guest.id);
       tbody.appendChild(tr);
     });
