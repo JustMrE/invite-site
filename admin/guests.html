@@ -9,12 +9,34 @@
       rel="stylesheet"
     />
     <style>
-      .status-yes { background-color: #d4edda; color: #155724; font-weight: bold; }
-      .status-no { background-color: #f8d7da; color: #721c24; font-weight: bold; }
-      .status-pending { background-color: #fff3cd; color: #856404; font-weight: bold; }
-      .invite-block { border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
-      .invite-header { display: flex; justify-content: space-between; align-items: center; }
-      .sortable:hover { cursor: pointer; text-decoration: underline; }
+      .status-yes {
+        background-color: #d4edda;
+        color: #155724;
+        font-weight: bold;
+      }
+      .status-no {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: bold;
+      }
+      .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+        font-weight: bold;
+      }
+      .group-header td {
+        background-color: #e9ecef;
+        font-weight: bold;
+      }
+      @media (max-width: 576px) {
+        td,
+        th {
+          font-size: 0.85rem;
+        }
+        h2 {
+          font-size: 1.25rem;
+        }
+      }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -23,14 +45,25 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
       <a class="navbar-brand" href="#">Пригласительные</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-3">
-          <li class="nav-item"><a class="nav-link" href="create.html">Отправить</a></li>
-          <li class="nav-item"><a class="nav-link active" href="guests.html">Список гостей</a></li>
-          <li class="nav-item"><a class="nav-link" href="invites.html">Список приглашений</a></li>
+          <li class="nav-item">
+            <a class="nav-link" href="create.html">Отправить</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="guests.html">Список гостей</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="invites.html">Список приглашений</a>
+          </li>
         </ul>
       </div>
     </nav>
@@ -46,8 +79,54 @@
           <option value="status">Статус</option>
         </select>
       </div>
-      <div id="invitesContainer"></div>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Имя</th>
+              <th>Тип</th>
+              <th>Статус</th>
+              <th>Действие</th>
+            </tr>
+          </thead>
+          <tbody id="guestTableBody"></tbody>
+        </table>
+      </div>
     </main>
+
+    <!-- Модальное окно редактирования -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Редактировать приглашение</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Закрыть"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>ID:</strong> <span id="modalInviteId"></span></p>
+            <div class="mb-2"><strong>Гости:</strong></div>
+            <div id="guestInputsContainer" class="mb-3"></div>
+            <button id="addGuestBtn" class="btn btn-secondary btn-sm mb-3">
+              Добавить гостя
+            </button>
+            <div class="d-flex justify-content-end">
+              <button id="saveInviteBtn" class="btn btn-success me-2">
+                Сохранить
+              </button>
+              <button id="deleteInviteBtn" class="btn btn-danger">
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
       const firebaseConfig = {
@@ -60,10 +139,62 @@
         appId: "1:228773799390:web:2ae10163590ff87e1c294f",
       };
       firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
 
-      const container = document.getElementById("invitesContainer");
+      const db = firebase.database();
+      const tbody = document.getElementById("guestTableBody");
       const sortField = document.getElementById("sortField");
+
+      const editModal = new bootstrap.Modal(
+        document.getElementById("editModal")
+      );
+      const modalInviteId = document.getElementById("modalInviteId");
+      const guestInputsContainer = document.getElementById(
+        "guestInputsContainer"
+      );
+      const addGuestBtn = document.getElementById("addGuestBtn");
+      const saveInviteBtn = document.getElementById("saveInviteBtn");
+      const deleteInviteBtn = document.getElementById("deleteInviteBtn");
+
+      let currentEditingId = null;
+
+      addGuestBtn.onclick = () => {
+        const div = document.createElement("div");
+        div.className = "input-group mb-2";
+        div.innerHTML = `
+          <input type="text" class="form-control" placeholder="Имя гостя" />
+          <button class="btn btn-outline-danger" type="button">✕</button>
+        `;
+        div.querySelector("button").onclick = () => div.remove();
+        guestInputsContainer.appendChild(div);
+      };
+
+      saveInviteBtn.onclick = () => {
+        if (!currentEditingId) return;
+        const guestNames = Array.from(
+          guestInputsContainer.querySelectorAll("input")
+        )
+          .map((input) => input.value.trim())
+          .filter((name) => name);
+
+        db.ref(`invites/${currentEditingId}/guests`)
+          .set(guestNames)
+          .then(() => {
+            editModal.hide();
+            loadAndRender();
+          });
+      };
+
+      deleteInviteBtn.onclick = () => {
+        if (!currentEditingId) return;
+        if (confirm("Удалить это приглашение?")) {
+          db.ref(`invites/${currentEditingId}`)
+            .remove()
+            .then(() => {
+              editModal.hide();
+              loadAndRender();
+            });
+        }
+      };
 
       const statusMap = {
         yes: { text: "Қатысады", class: "status-yes" },
@@ -71,51 +202,88 @@
         pending: { text: "Жауап жоқ", class: "status-pending" },
       };
 
-      function render() {
-        container.innerHTML = "Загрузка...";
-        db.ref("invites").once("value").then(snapshot => {
-          const invites = snapshot.val() || {};
-          const inviteList = Object.entries(invites).map(([id, invite]) => {
-            return {
-              id,
-              created: invite.created,
-              guests: invite.guests || [],
-              status: invite.status || "pending",
-              type: invite.type || "named"
-            };
-          });
+      function openEditModal(id, data) {
+        currentEditingId = id;
+        modalInviteId.textContent = id;
+        guestInputsContainer.innerHTML = "";
+        (data.guests || []).forEach((name) => {
+          const div = document.createElement("div");
+          div.className = "input-group mb-2";
+          div.innerHTML = `
+            <input type="text" class="form-control" value="${name}" />
+            <button class="btn btn-outline-danger" type="button">✕</button>
+          `;
+          div.querySelector("button").onclick = () => div.remove();
+          guestInputsContainer.appendChild(div);
+        });
+        editModal.show();
+      }
 
-          const field = sortField.value;
-          inviteList.sort((a, b) => {
-            if (field === "name") return (a.guests[0] || "").localeCompare(b.guests[0] || "");
-            if (field === "created") return new Date(b.created) - new Date(a.created);
-            if (field === "type") return a.type.localeCompare(b.type);
-            if (field === "status") return a.status.localeCompare(b.status);
-            return 0;
-          });
+      function renderTable(sortedInvites) {
+        tbody.innerHTML = "";
+        sortedInvites.forEach(({ id, created, guests, type, status }) => {
+          const createdStr = new Date(created).toLocaleString();
+          const statusInfo = statusMap[status] || statusMap.pending;
+          const typeText = type === "named" ? "Именной" : "Неименной";
 
-          container.innerHTML = "";
-          inviteList.forEach(invite => {
-            const statusInfo = statusMap[invite.status] || statusMap.pending;
-            const div = document.createElement("div");
-            div.className = "invite-block";
-            div.innerHTML = `
-              <div class="invite-header">
-                <strong>Пригласительный ID: ${invite.id}</strong>
-                <button class="btn btn-sm btn-outline-primary" onclick="window.location='invites.html#${invite.id}'">Редактировать</button>
-              </div>
-              <p><strong>Дата:</strong> ${new Date(invite.created).toLocaleString()}</p>
-              <p><strong>Тип:</strong> ${invite.type === "named" ? "Именной" : "Неименной"}</p>
-              <p><strong>Статус:</strong> <span class="${statusInfo.class}">${statusInfo.text}</span></p>
-              <p><strong>Гости:</strong><br>${invite.guests.map(g => `• ${g}`).join("<br>")}</p>
+          // строка-заголовок группы
+          const groupHeader = document.createElement("tr");
+          groupHeader.className = "group-header";
+          groupHeader.innerHTML = `
+            <td colspan="5">
+              Пригласительный #${id} <span class="text-muted">(${createdStr})</span>
+              <button class="btn btn-sm btn-outline-primary float-end">Редактировать</button>
+            </td>
+          `;
+          groupHeader.querySelector("button").onclick = () =>
+            openEditModal(id, { guests });
+          tbody.appendChild(groupHeader);
+
+          const guestList = guests.length > 0 ? guests : ["—"];
+          guestList.forEach((name) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${createdStr}</td>
+              <td>${name}</td>
+              <td>${typeText}</td>
+              <td><span class="${statusInfo.class}">${statusInfo.text}</span></td>
+              <td></td>
             `;
-            container.appendChild(div);
+            tbody.appendChild(tr);
           });
         });
       }
 
-      sortField.addEventListener("change", render);
-      render();
+      function loadAndRender() {
+        db.ref("invites")
+          .once("value")
+          .then((snapshot) => {
+            const data = snapshot.val() || {};
+            const invites = Object.entries(data).map(([id, invite]) => ({
+              id,
+              created: invite.created || new Date().toISOString(),
+              guests: invite.guests || [],
+              type: invite.type || "named",
+              status: invite.status || "pending",
+            }));
+
+            const field = sortField.value;
+            invites.sort((a, b) => {
+              if (field === "name")
+                return (a.guests[0] || "").localeCompare(b.guests[0] || "");
+              if (field === "created")
+                return new Date(b.created) - new Date(a.created);
+              if (field === "type") return a.type.localeCompare(b.type);
+              if (field === "status") return a.status.localeCompare(b.status);
+              return 0;
+            });
+
+            renderTable(invites);
+          });
+      }
+
+      sortField.addEventListener("change", loadAndRender);
+      loadAndRender();
     </script>
   </body>
 </html>
