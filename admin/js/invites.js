@@ -1,4 +1,4 @@
-// Guests.js — логика работы страницы гостей
+// invites.js — логика работы страницы приглашений
 
 // Firebase config
 const firebaseConfig = {
@@ -161,7 +161,8 @@ function renderGuests() {
       if (sortKey === "created")
         return new Date(b.created) - new Date(a.created);
       if (sortKey === "type") return a.type.localeCompare(b.type);
-      if (sortKey === "status") return a.status.localeCompare(b.status);
+      if (sortKey === "status")
+        return a.guestStatus.localeCompare(b.guestStatus);
       return 0;
     });
   }
