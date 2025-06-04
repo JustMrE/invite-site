@@ -1,0 +1,41 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.group-header {
+  background-color: #e9ecef;
+  font-weight: bold;
+}
+
+.status-yes {
+  color: green;
+}
+
+.status-no {
+  color: red;
+}
+
+.status-pending {
+  color: gray;
+}
+
+input.form-control {
+  min-width: 200px;
+}
+
+/* .guest-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: grab;
+} */
+
+.guest-input .drag-handle {
+  cursor: grab;
+  user-select: none;
+}
+
+.grouped-row td {
+  border-top: 3px solid #444 !important;
+  background-color: #fdfdfd;
+}
