@@ -1,4 +1,4 @@
-// Guests.js — логика работы страницы гостей
+// invites.js — логика работы страницы приглашений
 
 // Firebase config
 const firebaseConfig = {
