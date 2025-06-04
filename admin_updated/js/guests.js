@@ -14,6 +14,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // Элементы
+const baseLink = `${location.origin}/invite-site`;
 const tbody = document.getElementById("guestTableBody");
 const sortField = document.getElementById("sortField");
 const searchInput = document.getElementById("searchInput");
@@ -94,8 +95,8 @@ function renderGuests() {
   tbody.innerHTML = "";
 
   const guestsFlat = [];
-  invitesCache.forEach((invite, id) => {
-    invite.guests.forEach((guest, i) => {
+  invitesCache.forEach((invite) => {
+    invite.guests.forEach((guest) => {
       guestsFlat.push({
         groupId: invite.id,
         created: invite.created,
@@ -105,11 +106,6 @@ function renderGuests() {
       });
     });
   });
-
-  // const searchTerm = searchInput.value.toLowerCase();
-  // let filtered = guestsFlat.filter((g) =>
-  //   g.guestName.toLowerCase().includes(searchTerm)
-  // );
 
   const searchTerm = searchInput.value.toLowerCase();
 
@@ -197,9 +193,6 @@ function renderGuests() {
       }</td>`;
 
     if (columnVisibility.status) {
-      // let statusClass = "status-pending";
-      // if (guest.guestStatus === "yes") statusClass = "status-yes";
-      // else if (guest.guestStatus === "no") statusClass = "status-no";
       tr.innerHTML += `<td><span class='${statusInfo.class}'>${statusInfo.text}</span></td>`;
     }
 
@@ -222,12 +215,12 @@ function renderGuests() {
 }
 
 function openInvite(id) {
-  const link = `${location.origin}/invite.html?invite=${currentEditingId}`;
+  const link = `${baseLink}/invite.html?invite=${id}`;
   window.open(link, "_blank");
 }
 
 function shareInvite(id) {
-  const link = `${location.origin}/invite.html?invite=${id}`;
+  const link = `${baseLink}/invite.html?invite=${id}`;
   navigator.share
     ? navigator.share({ title: "Приглашение", url: link })
     : prompt("Скопируйте ссылку:", link);
@@ -287,10 +280,11 @@ deleteInviteBtn.onclick = () => {
 };
 
 shareInviteBtn.onclick = () => {
-  const link = `${location.origin}/invite.html?invite=${currentEditingId}`;
-  navigator.share
-    ? navigator.share({ title: "Приглашение", url: link })
-    : prompt("Скопируйте ссылку:", link);
+  shareInvite(currentEditingId);
+  // const link = `${location.origin}/invite-site/invite.html?invite=${currentEditingId}`;
+  // navigator.share
+  //   ? navigator.share({ title: "Приглашение", url: link })
+  //   : prompt("Скопируйте ссылку:", link);
 };
 
 searchInput.oninput = renderGuests;
