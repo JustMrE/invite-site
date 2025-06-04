@@ -34,3 +34,8 @@ input.form-control {
   cursor: grab;
   user-select: none;
 }
+
+.grouped-row td {
+  border-top: 3px solid #444 !important;
+  background-color: #fdfdfd;
+}

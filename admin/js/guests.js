@@ -14,11 +14,13 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // Элементы
+const baseLink = `${location.origin}/invite-site`;
 const tbody = document.getElementById("guestTableBody");
 const sortField = document.getElementById("sortField");
 const searchInput = document.getElementById("searchInput");
-const toggleColumnsBtn = document.getElementById("toggleColumnsBtn");
 const tableHead = document.getElementById("tableHead");
+const groupGuestsToggle = document.getElementById("groupGuestsToggle");
+groupGuestsToggle.onchange = renderGuests;
 
 // Модалка редактирования
 const editModal = new bootstrap.Modal(document.getElementById("editModal"));
@@ -37,55 +39,196 @@ const columnSettingsBody = document.getElementById("columnSettingsBody");
 
 let currentEditingId = null;
 let invitesCache = [];
-let columnVisibility = { created: true, name: true, type: true, status: true };
-
-// Редактирование гостей
-addGuestBtn.onclick = () => {
-  const div = document.createElement("div");
-  div.className = "input-group mb-2";
-  div.innerHTML = `
-    <input type="text" class="form-control" placeholder="Имя гостя" />
-    <button class="btn btn-outline-danger" type="button">✕</button>
-  `;
-  div.querySelector("button").onclick = () => div.remove();
-  guestInputsContainer.appendChild(div);
+let columnVisibility = {
+  index: true,
+  group: true,
+  created: true,
+  name: true,
+  type: true,
+  status: true,
+  actions: true,
 };
 
-saveInviteBtn.onclick = () => {
-  if (!currentEditingId) return;
-  const guestNames = Array.from(guestInputsContainer.querySelectorAll("input"))
-    .map((input) => input.value.trim())
-    .filter((name) => name);
-
-  db.ref(`invites/${currentEditingId}/guests`)
-    .set(guestNames)
-    .then(() => {
-      editModal.hide();
-      loadAndRender();
+function renderColumnSettings() {
+  columnSettingsBody.innerHTML = "";
+  for (const key in columnVisibility) {
+    const labelMap = {
+      index: "№",
+      group: "Номер приглашения",
+      created: "Дата",
+      name: "Имя",
+      type: "Тип",
+      status: "Статус",
+      actions: "Действия",
+    };
+    const row = document.createElement("div");
+    row.className = "form-check";
+    row.innerHTML = `
+      <input class="form-check-input" type="checkbox" value="${key}" id="col-${key}" ${
+      columnVisibility[key] ? "checked" : ""
+    }>
+      <label class="form-check-label" for="col-${key}">${labelMap[key]}</label>
+    `;
+    row.querySelector("input").addEventListener("change", (e) => {
+      columnVisibility[key] = e.target.checked;
+      renderGuests();
     });
-};
-
-deleteInviteBtn.onclick = () => {
-  if (!currentEditingId) return;
-  if (confirm("Удалить это приглашение?")) {
-    db.ref(`invites/${currentEditingId}`)
-      .remove()
-      .then(() => {
-        editModal.hide();
-        loadAndRender();
-      });
+    columnSettingsBody.appendChild(row);
   }
+}
+
+document.getElementById("toggleColumnsBtn").onclick = () => {
+  renderColumnSettings();
+  columnSettingsModal.show();
 };
 
-shareInviteBtn.onclick = () => {
-  const link = `${location.origin}/invite.html?invite=${currentEditingId}`;
+function updateTableHeader() {
+  const ths = tableHead.querySelector("tr").children;
+  Array.from(ths).forEach((th) => {
+    const col = th.dataset.column;
+    if (!col || columnVisibility[col]) th.style.display = "";
+    else th.style.display = "none";
+  });
+}
+
+function renderGuests() {
+  tbody.innerHTML = "";
+
+  const guestsFlat = [];
+  invitesCache.forEach((invite) => {
+    invite.guests.forEach((guest) => {
+      guestsFlat.push({
+        groupId: invite.id,
+        created: invite.created,
+        type: invite.type,
+        guestName: guest,
+        guestStatus: invite.status || "pending",
+      });
+    });
+  });
+
+  const searchTerm = searchInput.value.toLowerCase();
+
+  let filtered;
+
+  if (groupGuestsToggle.checked) {
+    // Шаг 1: находим группы, где хотя бы один гость совпадает
+    const matchingGroupIds = new Set();
+
+    guestsFlat.forEach((g) => {
+      if (g.guestName.toLowerCase().includes(searchTerm)) {
+        matchingGroupIds.add(g.groupId);
+      }
+    });
+
+    // Шаг 2: берём всех гостей из найденных групп
+    filtered = guestsFlat.filter((g) => matchingGroupIds.has(g.groupId));
+  } else {
+    // Обычный поиск
+    filtered = guestsFlat.filter((g) =>
+      g.guestName.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  const sortKey = sortField.value;
+  // Сортировка
+  if (groupGuestsToggle.checked) {
+    // Шаг 1: обычная сортировка по выбранному полю
+    filtered.sort((a, b) => {
+      if (sortKey === "name")
+        return (a.guestName || "").localeCompare(b.guestName || "");
+      if (sortKey === "created")
+        return new Date(b.created) - new Date(a.created);
+      if (sortKey === "type") return a.type.localeCompare(b.type);
+      if (sortKey === "status") return a.guestStatus.localeCompare(b.guestStatus);
+      return 0;
+    });
+
+    // Шаг 2: сгруппировать в порядке появления по groupId
+    const grouped = {};
+    filtered.forEach((g) => {
+      if (!grouped[g.groupId]) grouped[g.groupId] = [];
+      grouped[g.groupId].push(g);
+    });
+
+    // Собираем обратно, но уже с группами подряд
+    filtered = Object.values(grouped).flat();
+  } else {
+    // Простая сортировка без группировки
+    filtered.sort((a, b) => {
+      if (sortKey === "name")
+        return (a.guestName || "").localeCompare(b.guestName || "");
+      if (sortKey === "created")
+        return new Date(b.created) - new Date(a.created);
+      if (sortKey === "type") return a.type.localeCompare(b.type);
+      if (sortKey === "status") return a.status.localeCompare(b.status);
+      return 0;
+    });
+  }
+
+  const statusMap = {
+    yes: { text: "Қатысады", class: "status-yes" },
+    no: { text: "Қатыспайды", class: "status-no" },
+    pending: { text: "Жауап жоқ", class: "status-pending" },
+  };
+  let lastGroupId = null;
+
+  filtered.forEach((guest, index) => {
+    const tr = document.createElement("tr");
+    const statusInfo = statusMap[guest.guestStatus] || statusMap.pending;
+
+    // Обводка, если новый groupId (и включён чекбокс группировки)
+    if (groupGuestsToggle.checked && guest.groupId !== lastGroupId) {
+      tr.classList.add("grouped-row");
+    }
+    lastGroupId = guest.groupId;
+
+    if (columnVisibility.index) tr.innerHTML += `<td>${index + 1}</td>`;
+    if (columnVisibility.group) tr.innerHTML += `<td>${guest.groupId}</td>`;
+    if (columnVisibility.created) tr.innerHTML += `<td>${guest.created}</td>`;
+    if (columnVisibility.name) tr.innerHTML += `<td>${guest.guestName}</td>`;
+    if (columnVisibility.type)
+      tr.innerHTML += `<td>${
+        guest.type === "named" ? "Именной" : "Неименной"
+      }</td>`;
+
+    if (columnVisibility.status) {
+      tr.innerHTML += `<td><span class='${statusInfo.class}'>${statusInfo.text}</span></td>`;
+    }
+
+    if (columnVisibility.actions) {
+      const td = document.createElement("td");
+
+      td.innerHTML = `
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-primary" onclick="openInvite('${guest.groupId}')">Открыть</button>
+          <button class="btn btn-sm btn-secondary" onclick="shareInvite('${guest.groupId}')">Поделиться</button>
+          <button class="btn btn-sm btn-warning" onclick="editInvite('${guest.groupId}')">Редактировать</button>
+        </div>`;
+      tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  updateTableHeader();
+}
+
+function openInvite(id) {
+  const link = `${baseLink}/index.html?invite=${id}`;
+  window.open(link, "_blank");
+}
+
+function shareInvite(id) {
+  const link = `${baseLink}/index.html?invite=${id}`;
   navigator.share
     ? navigator.share({ title: "Приглашение", url: link })
     : prompt("Скопируйте ссылку:", link);
-};
+}
 
-function openEditModal(id, data) {
+function editInvite(id) {
   currentEditingId = id;
+  const data = invitesCache.find((i) => i.id === id);
   modalInviteId.textContent = id;
   guestInputsContainer.innerHTML = "";
   (data.guests || []).forEach((name) => {
@@ -107,137 +250,50 @@ new Sortable(guestInputsContainer, {
   animation: 150,
 });
 
-const statusMap = {
-  yes: { text: "Қатысады", class: "status-yes" },
-  no: { text: "Қатыспайды", class: "status-no" },
-  pending: { text: "Жауап жоқ", class: "status-pending" },
+addGuestBtn.onclick = () => {
+  const div = document.createElement("div");
+  div.className = "input-group mb-2";
+  div.innerHTML = `
+    <input type="text" class="form-control" placeholder="Имя гостя" />
+    <button class="btn btn-outline-danger" type="button">✕</button>
+  `;
+  div.querySelector("button").onclick = () => div.remove();
+  guestInputsContainer.appendChild(div);
 };
 
-function renderTable() {
-  tbody.innerHTML = "";
-  const field = sortField.value;
-  let list = [...invitesCache];
+saveInviteBtn.onclick = () => {
+  const guests = Array.from(guestInputsContainer.querySelectorAll("input"))
+    .map((input) => ({
+      name: input.value.trim(),
+      status: "pending",
+    }))
+    .filter((g) => g.name);
+  db.ref("invites/" + currentEditingId).update({ guests });
+  editModal.hide();
+};
 
-  // Фильтрация
-  const search = searchInput.value.toLowerCase();
-  if (search) {
-    list = list.filter((inv) =>
-      inv.guests.some((g) => g.toLowerCase().includes(search))
-    );
+deleteInviteBtn.onclick = () => {
+  if (confirm("Удалить приглашение?")) {
+    db.ref("invites/" + currentEditingId).remove();
+    editModal.hide();
   }
+};
 
-  // Сортировка
-  list.sort((a, b) => {
-    if (field === "name")
-      return (a.guests[0] || "").localeCompare(b.guests[0] || "");
-    if (field === "created") return new Date(b.created) - new Date(a.created);
-    if (field === "type") return a.type.localeCompare(b.type);
-    if (field === "status") return a.status.localeCompare(b.status);
-    return 0;
+shareInviteBtn.onclick = () => {
+  shareInvite(currentEditingId);
+  // const link = `${location.origin}/invite-site/invite.html?invite=${currentEditingId}`;
+  // navigator.share
+  //   ? navigator.share({ title: "Приглашение", url: link })
+  //   : prompt("Скопируйте ссылку:", link);
+};
+
+searchInput.oninput = renderGuests;
+sortField.onchange = renderGuests;
+
+db.ref("invites").on("value", (snapshot) => {
+  invitesCache = [];
+  snapshot.forEach((child) => {
+    invitesCache.push({ id: child.key, ...child.val() });
   });
-
-  for (const { id, created, guests, type, status } of list) {
-    const createdStr = new Date(created).toLocaleString();
-    const statusInfo = statusMap[status] || statusMap.pending;
-    const typeText = type === "named" ? "Именной" : "Неименной";
-
-    const groupHeader = document.createElement("tr");
-    groupHeader.className = "group-header";
-    groupHeader.innerHTML = `
-      <td colspan="5">
-        <span class="me-2">Пригласительный #${id}</span>
-        <button class="btn btn-sm btn-outline-primary float-end " onclick="window.open('${
-          location.origin
-        }/invite.html?invite=${id}', '_blank')">Открыть</button>
-        <button class="btn btn-sm btn-outline-primary float-end me-2" onclick="navigator.share ? navigator.share({ title: 'Приглашение', url: '${
-          location.origin
-        }/invite.html?invite=${id}' }) : alert('Поддержка недоступна')")">Поделиться</button>
-        <button class="btn btn-sm btn-outline-secondary float-end" onclick='openEditModal("${id}", ${JSON.stringify(
-      { guests }
-    )})'>Редактировать</button>
-      </td>`; //<button class="btn btn-sm btn-outline-primary float-end me-2" onclick="navigator.clipboard.writeText('${location.origin}/invite.html?invite=${id}')">Поделиться</button>
-    tbody.appendChild(groupHeader);
-
-    guests.forEach((name) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        ${columnVisibility.created ? `<td>${createdStr}</td>` : ""}
-        ${columnVisibility.name ? `<td>${name}</td>` : ""}
-        ${columnVisibility.type ? `<td>${typeText}</td>` : ""}
-        ${
-          columnVisibility.status
-            ? `<td><span class='${statusInfo.class}'>${statusInfo.text}</span></td>`
-            : ""
-        }
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  updateTableHeader();
-}
-
-function updateTableHeader() {
-  const ths = tableHead.querySelector("tr").children;
-  Array.from(ths).forEach((th) => {
-    const col = th.dataset.column;
-    if (!col || columnVisibility[col]) th.style.display = "";
-    else th.style.display = "none";
-  });
-}
-
-function openColumnSettings() {
-  columnSettingsBody.innerHTML = "";
-  for (const [key, visible] of Object.entries(columnVisibility)) {
-    const id = `col-${key}`;
-    const label =
-      key === "created"
-        ? "Дата"
-        : key === "name"
-        ? "Имя"
-        : key === "type"
-        ? "Тип"
-        : "Статус";
-    columnSettingsBody.innerHTML += `
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="${id}" ${
-      visible ? "checked" : ""
-    }>
-        <label class="form-check-label" for="${id}">${label}</label>
-      </div>
-    `;
-  }
-  columnSettingsModal.show();
-}
-
-document
-  .getElementById("columnSettingsModal")
-  .addEventListener("change", (e) => {
-    const id = e.target.id?.replace("col-", "");
-    if (id && id in columnVisibility) {
-      columnVisibility[id] = e.target.checked;
-      renderTable();
-    }
-  });
-
-toggleColumnsBtn.onclick = openColumnSettings;
-sortField.onchange = renderTable;
-searchInput.oninput = renderTable;
-
-function loadAndRender() {
-  db.ref("invites")
-    .once("value")
-    .then((snapshot) => {
-      const data = snapshot.val() || {};
-      invitesCache = Object.entries(data).map(([id, invite]) => ({
-        id,
-        created: invite.created || new Date().toISOString(),
-        guests: invite.guests || [],
-        type: invite.type || "named",
-        status: invite.status || "pending",
-      }));
-      renderTable();
-    });
-}
-
-loadAndRender();
+  renderGuests();
+});
