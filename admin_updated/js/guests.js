@@ -229,7 +229,7 @@ function renderGuests() {
 }
 
 function openInvite(id) {
-  window.open(`invite.html?invite=${id}`, "_blank");
+  window.open`${location.origin}/invite.html?invite=${id}`, "_blank");
 }
 
 function shareInvite(id) {
