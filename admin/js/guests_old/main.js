@@ -1,8 +1,8 @@
 // /js/main.js
 import { db } from "./firebase.js";
 import { setAllGuests } from "./state.js";
-import { createAddGuestModal } from "./modals.js";
-import { createGuestRow, createTableHeader } from "./ui/table.js";
+import { createAddGuestModal } from "./ui/modals.js";
+import { createGuestRow, createGuestTableHeader } from "./ui/table.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("addGuestButton").addEventListener("click", createAddGuestModal);
@@ -20,7 +20,7 @@ export function loadGuestsFromFirebase() {
 
     const entries = Object.entries(data);
     const firstGuest = entries[0][1];
-    createTableHeader(firstGuest);
+    createGuestTableHeader(firstGuest);
     entries.forEach(([key, guest], index) => {
       const tr = createGuestRow(index, key, guest);
       tbody.appendChild(tr);

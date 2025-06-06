@@ -1,34 +1,28 @@
-// /js/logic/guest-form.js
-import { db } from "../firebase.js";
-import { syncGuestRelations } from "./relations.js";
-import { loadGuestsFromFirebase } from "../main.js";
+import { db } from './firebase.js';
 
-export function saveNewGuest() {
+function saveGuest() {
   const name = document.getElementById("guestName").value.trim();
-  if (!name) return alert("Введите имя");
+  const invite = document.getElementById("inviteNumber").value.trim();
+  if (!name) return;
 
-  const id = db.ref("guests").push().key;
-  const guest = { guestName: name };
-
-  db.ref(`guests/${id}`).set(guest).then(() => {
-    bootstrap.Modal.getInstance(document.getElementById("addGuestModal")).hide();
-    loadGuestsFromFirebase();
-  });
+  const newGuestRef = db.ref("guests").push();
+  newGuestRef.set({ guestName: name, invite });
+  document.getElementById("guestName").value = "";
+  document.getElementById("inviteNumber").value = "";
 }
 
-export function saveEditedGuest(id) {
-  const name = document.getElementById("editGuestName").value.trim();
-  const invite = document.getElementById("editInviteNumber").value.trim();
-
-  const updatedGuest = {
-    guestName: name,
-    inviteNumber: invite,
-  };
-
-  db.ref(`guests/${id}`).update(updatedGuest).then(() => {
-    syncGuestRelations(id).then(() => {
-      bootstrap.Modal.getInstance(document.getElementById("editGuestModal")).hide();
-      loadGuestsFromFirebase();
+function loadGuests() {
+  const tbody = document.querySelector("#guestTable tbody");
+  tbody.innerHTML = "";
+  db.ref("guests").once("value", (snapshot) => {
+    const guests = snapshot.val();
+    if (!guests) return;
+    Object.entries(guests).forEach(([id, guest], index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${index + 1}</td><td>${guest.guestName}</td><td>${guest.invite}</td><td></td>`;
+      tbody.appendChild(tr);
     });
   });
 }
+
+export { saveGuest, loadGuests };
