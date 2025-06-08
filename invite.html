@@ -1,1 +1,278 @@
-html
+<!DOCTYPE html>
+<html lang="kk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тойға шақыру</title>
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Шрифт -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=El+Messiri&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- скрипты -->
+    <script defer src="./js2/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <!-- Стили -->
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+
+  <body>
+    <div class="falling-stars" id="fallingStars"></div>
+    <div class="balloon-container" id="balloonContainer"></div>
+    <div class="lang-toggle">
+      <button id="toggleLang" class="btn btn-light">Қазақша / Русский</button>
+    </div>
+
+    <header class="title">
+      <h1 id="mainTitle">Тойға шақыру</h1>
+    </header>
+
+    <div>
+      <img class="topimage" src="./img/toi2.png" alt="" />
+    </div>
+
+    <section class="block ornament-border">
+      <div class="border-container">
+        <div class="border-frame">
+          <div class="v-border-left"></div>
+          <div class="v-border-right"></div>
+
+          <div class="border-content hero">
+            <div class="hero-content">
+              <img src="./img/asset4.png" alt="" class="invite-icon" />
+              <div>
+                <h2>Тоғжан</h2>
+                <p>тілашар</p>
+              </div>
+            </div>
+            <div class="hero-content">
+              <div>
+                <h2>Алижан</h2>
+                <p>сүндет той</p>
+              </div>
+              <img src="./img/asset5.png" alt="" class="invite-icon" />
+            </div>
+            <div class="hero-content">
+              <img src="./img/asset6.png" alt="" class="invite-icon" />
+              <div>
+                <h2>Еркежан</h2>
+                <p>шілдехана</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block ornament-border">
+      <div class="border-container">
+        <div class="border-frame">
+          <div class="v-border-left"></div>
+          <div class="v-border-right"></div>
+
+          <div class="border-content">
+            <div class="greeting greeting-1">
+              <img src="./img/asset1.png" alt="Юрта" class="invite-icon" />
+              <h2 class="text-center" id="guestGreeting">
+                Құрметті Ағайын-туыс, бауырлар, құда-жекжат, нағашы-жиен,
+                бөлелер, дос-жарандар, көршілер!
+              </h2>
+            </div>
+            <div class="greeting greeting-2">
+              <p class="text-center" id="lang-1">
+                Сіздерді немерелеріміздің тойларына арналған ақ дастарханымыздың
+                қадірменді қонағы болуға шақырамыз!
+              </p>
+              <img src="./img/asset2.png" alt="Баурсақ" class="invite-icon" />
+            </div>
+            <div class="greeting greeting-3">
+              <p class="text-center" id="lang-2">
+                <strong>Той иелері:</strong><br />
+                <strong>Бауржан, Қамар</strong>
+              </p>
+              <img src="./img/asset3.png" alt="Домбыра" class="invite-icon" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block ornament-border">
+      <div class="border-container">
+        <div class="border-frame">
+          <div class="v-border-left"></div>
+          <div class="v-border-right"></div>
+
+          <div class="border-content">
+            <!-- контент -->
+            <h2 class="text-center" id="address-lang-1">Той салтанаты:</h2>
+            <p class="text-center" id="address-lang-2">
+              <strong>14 маусым 2025 ж, сағат 17:00</strong>
+            </p>
+            <p class="text-center">Ресторан «Алтын Ел», пр. Дулати 55</p>
+            <!-- Кнопка/ссылка с иконкой -->
+            <div class="mb-3 text-center">
+              <a
+                href="https://2gis.kz/almaty/firm/70000001025292888"
+                target="_blank"
+                class="btn btn-outline-success d-inline-flex align-items-center"
+                style="gap: 0.5rem"
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/ru/7/77/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_2%D0%93%D0%98%D0%A1.svg"
+                  alt="2GIS"
+                  width="60"
+                  height="20"
+                />
+                <span id="address-lang-3">қартада ашу</span>
+              </a>
+            </div>
+
+            <!-- Стандартные ссылки -->
+            <a
+              class="dg-widget-link"
+              href="http://2gis.kz/almaty/firm/70000001025292888/center/76.89173340797426,43.16542782353295/zoom/17?utm_medium=widget-source&utm_campaign=firmsonmap&utm_source=bigMap"
+            >
+              Посмотреть на карте Алматы
+            </a>
+            <div class="dg-widget-link">
+              <a
+                href="http://2gis.kz/almaty/firm/70000001025292888/photos/70000001025292888/center/76.89173340797426,43.16542782353295/zoom/17?utm_medium=widget-source&utm_campaign=firmsonmap&utm_source=photos"
+              >
+                Фотографии компании
+              </a>
+            </div>
+            <div class="dg-widget-link">
+              <a
+                href="http://2gis.kz/almaty/center/76.891566,43.165175/zoom/17/routeTab/rsType/bus/to/76.891566,43.165175╎Алтын Ел, ресторанный комплекс?utm_medium=widget-source&utm_campaign=firmsonmap&utm_source=route"
+              >
+                Найти проезд до Алтын Ел, ресторанный комплекс
+              </a>
+            </div>
+
+            <!-- Встраиваемый виджет -->
+            <script
+              charset="utf-8"
+              src="https://widgets.2gis.com/js/DGWidgetLoader.js"
+            ></script>
+            <script charset="utf-8">
+              new DGWidgetLoader({
+                width: "100%",
+                height: 300,
+                borderColor: "#a3a3a3",
+                pos: {
+                  lat: 43.16542782353295,
+                  lon: 76.89173340797426,
+                  zoom: 17,
+                },
+                opt: { city: "almaty" },
+                org: [{ id: "70000001025292888" }],
+              });
+            </script>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block ornament-border" id="rsvp">
+      <div class="border-container">
+        <div class="border-frame">
+          <div class="v-border-left"></div>
+          <div class="v-border-right"></div>
+
+          <div class="border-content">
+            <!-- контент -->
+            <h2 class="text-center">
+              <span id="submitCome"></span>
+              <span id="rsvp-lang-1"
+                >Тойға келетіңізді растауыңызды сұраймыз</span
+              >
+            </h2>
+            <form id="rsvpForm" class="needs-validation">
+              <div class="mb-3">
+                <input
+                  id="nameBlock"
+                  type="text"
+                  class="form-control"
+                  placeholder="Сіздің атыңыз"
+                  required
+                />
+              </div>
+              <div class="d-flex justify-content-center gap-3">
+                <button
+                  type="button"
+                  class="btn btn-success btn-yes"
+                  id="rsvp-lang-3"
+                >
+                  Әрине келемін
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-danger btn-no"
+                  id="rsvp-lang-4"
+                >
+                  Өкінішке орай келе алмаймын
+                </button>
+              </div>
+            </form>
+            <p
+              id="thanksMsg"
+              class="text-center mt-3 text-success fw-bold"
+              style="display: none"
+            >
+              Рақмет, күтеміз!
+            </p>
+            <p
+              id="sorryMsg"
+              class="text-center mt-3 text-danger fw-bold"
+              style="display: none"
+            >
+              Қап, өкінішті. Келесі жолы!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="countdown">
+      <h2 id="countdown-lang-1">Той салтанатына дейін:</h2>
+      <div class="countdown-wrapper">
+        <div class="timer">
+          <span class="num" id="days">12</span>
+          <span>күн</span>
+        </div>
+        <div class="timer">
+          <span class="num" id="hours">16</span>
+          <span>сағат</span>
+        </div>
+        <div class="timer">
+          <span class="num" id="minutes">20</span>
+          <span>минут</span>
+        </div>
+        <div class="timer">
+          <span class="num" id="seconds">17</span>
+          <span>секунд</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
