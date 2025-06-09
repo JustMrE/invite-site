@@ -102,7 +102,7 @@ function loadGuestsFromFirebase() {
               tbody.append(cloneTr);
               dragCloneTable.append(tbody);
               document.body.appendChild(dragCloneTable);
-            }, 250);
+            }, 500);
           },
           { passive: true }
         ); // не мешает прокрутке до начала drag
