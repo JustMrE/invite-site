@@ -67,40 +67,54 @@ function loadGuestsFromFirebase() {
         let dragCloneTable = null;
         let dragOffsetX = 0;
         let dragOffsetY = 0;
+        let isDragging = false;
+        let dragTimer = null;
 
         // touchstart
-        tr.addEventListener("touchstart", (e) => {
-          currentTouchedGuestId = key;
+        tr.addEventListener(
+          "touchstart",
+          (e) => {
+            currentTouchedGuestId = key;
 
-          const touch = e.touches[0];
-          const rect = tr.getBoundingClientRect();
+            const touch = e.touches[0];
+            const rect = tr.getBoundingClientRect();
 
-          dragOffsetX = touch.clientX - rect.left;
-          dragOffsetY = touch.clientY - rect.top;
+            dragOffsetX = touch.clientX - rect.left;
+            dragOffsetY = touch.clientY - rect.top;
 
-          dragCloneTable = document.createElement("table");
-          const tbody = document.createElement("tbody");
-          const cloneTr = tr.cloneNode(true);
+            // запускаем таймер на удержание (250 мс)
+            dragTimer = setTimeout(() => {
+              isDragging = true;
 
-          dragCloneTable.style.position = "fixed";
-          dragCloneTable.style.top = `${touch.clientY - dragOffsetY}px`;
-          dragCloneTable.style.left = `${touch.clientX - dragOffsetX}px`;
-          dragCloneTable.style.opacity = "0.7";
-          dragCloneTable.style.pointerEvents = "none";
-          dragCloneTable.style.zIndex = "999";
-          dragCloneTable.style.borderCollapse = "collapse";
-          dragCloneTable.classList.add("table", "table-bordered", "shadow");
+              dragCloneTable = document.createElement("table");
+              const tbody = document.createElement("tbody");
+              const cloneTr = tr.cloneNode(true);
 
-          tbody.append(cloneTr);
-          dragCloneTable.append(tbody);
-          document.body.appendChild(dragCloneTable);
-        });
+              dragCloneTable.style.position = "fixed";
+              dragCloneTable.style.top = `${touch.clientY - dragOffsetY}px`;
+              dragCloneTable.style.left = `${touch.clientX - dragOffsetX}px`;
+              dragCloneTable.style.opacity = "0.7";
+              dragCloneTable.style.pointerEvents = "none";
+              dragCloneTable.style.zIndex = "999";
+              dragCloneTable.style.borderCollapse = "collapse";
+              dragCloneTable.classList.add("table", "table-bordered", "shadow");
+
+              tbody.append(cloneTr);
+              dragCloneTable.append(tbody);
+              document.body.appendChild(dragCloneTable);
+            }, 250);
+          },
+          { passive: true }
+        ); // не мешает прокрутке до начала drag
 
         tr.addEventListener(
           "touchmove",
           (e) => {
-            e.preventDefault();
             const touch = e.touches[0];
+
+            if (!isDragging) return;
+
+            e.preventDefault(); // блокируем прокрутку только при активном перетаскивании
 
             if (dragCloneTable) {
               dragCloneTable.style.top = `${touch.clientY - dragOffsetY}px`;
@@ -111,17 +125,16 @@ function loadGuestsFromFirebase() {
               touch.clientX,
               touch.clientY
             );
-
             const row = elem?.closest("tr.draggable");
 
             if (row && row.dataset.id !== currentTouchedGuestId) {
               if (lastTouchedRow && lastTouchedRow !== row) {
-                lastTouchedRow.classList.remove("bg-warning-subtitle");
+                lastTouchedRow.classList.remove("bg-warning-subtle");
               }
-              row.classList.add("bg-warning-subtitle");
+              row.classList.add("bg-warning-subtle");
               lastTouchedRow = row;
             } else if (!row && lastTouchedRow) {
-              lastTouchedRow.classList.remove("bg-warning-subtitle");
+              lastTouchedRow.classList.remove("bg-warning-subtle");
               lastTouchedRow = null;
             } else if (row && row.dataset.id === currentTouchedGuestId) {
               lastTouchedRow = null;
@@ -131,23 +144,26 @@ function loadGuestsFromFirebase() {
         );
 
         tr.addEventListener("touchend", () => {
-          if (dragCloneTable) {
-            dragCloneTable.remove();
-            dragCloneTable = null;
-          }
+          clearTimeout(dragTimer); // отменить, если отпущено до истечения времени
 
-          if (lastTouchedRow) {
-            const targetId = lastTouchedRow.dataset.id;
-
-            if (targetId !== currentTouchedGuestId) {
-              showRelationModal(currentTouchedGuestId, targetId);
+          if (isDragging) {
+            if (dragCloneTable) {
+              dragCloneTable.remove();
+              dragCloneTable = null;
             }
 
-            lastTouchedRow.classList.remove("bg-warning-subtle");
-            lastTouchedRow = null;
+            if (lastTouchedRow) {
+              const targetId = lastTouchedRow.dataset.id;
+              if (targetId !== currentTouchedGuestId) {
+                showRelationModal(currentTouchedGuestId, targetId);
+              }
+              lastTouchedRow.classList.remove("bg-warning-subtle");
+              lastTouchedRow = null;
+            }
           }
 
           currentTouchedGuestId = null;
+          isDragging = false;
         });
 
         tbody.appendChild(tr);
