@@ -48,6 +48,16 @@ let columnVisibility = {
   status: true,
   actions: true,
 };
+loadVisiblitySettings("invitesVisiblitySettings");
+
+function saveVisiblitySettings(key) {
+  localStorage.setItem(key, JSON.stringify(columnVisibility));
+}
+
+function loadVisiblitySettings(key) {
+  if (localStorage.hasOwnProperty(key))
+    columnVisibility = JSON.parse(localStorage.getItem(key));
+}
 
 function renderColumnSettings() {
   columnSettingsBody.innerHTML = "";
@@ -61,6 +71,7 @@ function renderColumnSettings() {
       status: "Статус",
       actions: "Действия",
     };
+
     const row = document.createElement("div");
     row.className = "form-check";
     row.innerHTML = `
@@ -71,6 +82,7 @@ function renderColumnSettings() {
     `;
     row.querySelector("input").addEventListener("change", (e) => {
       columnVisibility[key] = e.target.checked;
+      saveVisiblitySettings("invitesVisiblitySettings");
       renderGuests();
     });
     columnSettingsBody.appendChild(row);
@@ -140,7 +152,8 @@ function renderGuests() {
       if (sortKey === "created")
         return new Date(b.created) - new Date(a.created);
       if (sortKey === "type") return a.type.localeCompare(b.type);
-      if (sortKey === "status") return a.guestStatus.localeCompare(b.guestStatus);
+      if (sortKey === "status")
+        return a.guestStatus.localeCompare(b.guestStatus);
       return 0;
     });
 
@@ -253,8 +266,9 @@ new Sortable(guestInputsContainer, {
 
 addGuestBtn.onclick = () => {
   const div = document.createElement("div");
-  div.className = "input-group mb-2";
+  div.className = "input-group mb-2 guest-input";
   div.innerHTML = `
+    <span class="input-group-text drag-handle">☰</span>
     <input type="text" class="form-control" placeholder="Имя гостя" />
     <button class="btn btn-outline-danger" type="button">✕</button>
   `;
@@ -263,12 +277,9 @@ addGuestBtn.onclick = () => {
 };
 
 saveInviteBtn.onclick = () => {
-  const guests = Array.from(guestInputsContainer.querySelectorAll("input"))
-    .map((input) => ({
-      name: input.value.trim(),
-      status: "pending",
-    }))
-    .filter((g) => g.name);
+  const guests = Array.from(guestInputsContainer.querySelectorAll("input")).map(
+    (input) => input.value.trim()
+  );
   db.ref("invites/" + currentEditingId).update({ guests });
   editModal.hide();
 };

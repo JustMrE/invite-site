@@ -17,52 +17,142 @@ let allGuests = {};
 
 // ✅ Загрузка и отображение гостей
 function loadGuestsFromFirebase() {
-  db.ref("guests").once("value").then((snapshot) => {
-    const data = snapshot.val();
-    allGuests = data || {};
-    const tbody = document.querySelector("#guestTable tbody");
-    tbody.innerHTML = "";
+  db.ref("guests")
+    .once("value")
+    .then((snapshot) => {
+      const data = snapshot.val();
+      allGuests = data || {};
+      const tbody = document.querySelector("#guestTable tbody");
+      tbody.innerHTML = "";
 
-    if (!data) return;
+      if (!data) return;
 
-    const entries = Object.entries(data);
-    const firstGuest = entries[0][1];
-    createTableHeader(firstGuest);
+      const entries = Object.entries(data);
+      const firstGuest = entries[0][1];
+      createTableHeader(firstGuest);
 
-    entries.forEach(([key, guest], index) => {
-      const tr = createGuestRow(index, key, guest);
-      tr.setAttribute("draggable", "true");
-      tr.dataset.id = key;
+      entries.forEach(([key, guest], index) => {
+        const tr = createGuestRow(index, key, guest);
+        tr.classList.add("draggable");
+        tr.setAttribute("draggable", "true");
+        tr.dataset.id = key;
 
-      tr.addEventListener("dragstart", (e) => {
-        e.dataTransfer.setData("guestId", key);
+        tr.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("guestId", key);
+        });
+
+        tr.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          tr.classList.add("bg-warning-subtle");
+        });
+
+        tr.addEventListener("dragleave", () => {
+          tr.classList.remove("bg-warning-subtle");
+        });
+
+        tr.addEventListener("drop", (e) => {
+          e.preventDefault();
+          tr.classList.remove("bg-warning-subtle");
+
+          const sourceId = e.dataTransfer.getData("guestId");
+          const targetId = tr.dataset.id;
+
+          if (sourceId === targetId) return;
+
+          showRelationModal(sourceId, targetId);
+        });
+
+        let currentTouchedGuestId = null;
+        let lastTouchedRow = null;
+        let dragCloneTable = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        // touchstart
+        tr.addEventListener("touchstart", (e) => {
+          currentTouchedGuestId = key;
+
+          const touch = e.touches[0];
+          const rect = tr.getBoundingClientRect();
+
+          dragOffsetX = touch.clientX - rect.left;
+          dragOffsetY = touch.clientY - rect.top;
+
+          dragCloneTable = document.createElement("table");
+          const tbody = document.createElement("tbody");
+          const cloneTr = tr.cloneNode(true);
+
+          dragCloneTable.style.position = "fixed";
+          dragCloneTable.style.top = `${touch.clientY - dragOffsetY}px`;
+          dragCloneTable.style.left = `${touch.clientX - dragOffsetX}px`;
+          dragCloneTable.style.opacity = "0.7";
+          dragCloneTable.style.pointerEvents = "none";
+          dragCloneTable.style.zIndex = "999";
+          dragCloneTable.style.borderCollapse = "collapse";
+          dragCloneTable.classList.add("table", "table-bordered", "shadow");
+
+          tbody.append(cloneTr);
+          dragCloneTable.append(tbody);
+          document.body.appendChild(dragCloneTable);
+        });
+
+        tr.addEventListener(
+          "touchmove",
+          (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+
+            if (dragCloneTable) {
+              dragCloneTable.style.top = `${touch.clientY - dragOffsetY}px`;
+              dragCloneTable.style.left = `${touch.clientX - dragOffsetX}px`;
+            }
+
+            const elem = document.elementFromPoint(
+              touch.clientX,
+              touch.clientY
+            );
+
+            const row = elem?.closest("tr.draggable");
+
+            if (row && row.dataset.id !== currentTouchedGuestId) {
+              if (lastTouchedRow && lastTouchedRow !== row) {
+                lastTouchedRow.classList.remove("bg-warning-subtitle");
+              }
+              row.classList.add("bg-warning-subtitle");
+              lastTouchedRow = row;
+            } else if (!row && lastTouchedRow) {
+              lastTouchedRow.classList.remove("bg-warning-subtitle");
+              lastTouchedRow = null;
+            } else if (row && row.dataset.id === currentTouchedGuestId) {
+              lastTouchedRow = null;
+            }
+          },
+          { passive: false }
+        );
+
+        tr.addEventListener("touchend", () => {
+          if (dragCloneTable) {
+            dragCloneTable.remove();
+            dragCloneTable = null;
+          }
+
+          if (lastTouchedRow) {
+            const targetId = lastTouchedRow.dataset.id;
+
+            if (targetId !== currentTouchedGuestId) {
+              showRelationModal(currentTouchedGuestId, targetId);
+            }
+
+            lastTouchedRow.classList.remove("bg-warning-subtle");
+            lastTouchedRow = null;
+          }
+
+          currentTouchedGuestId = null;
+        });
+
+        tbody.appendChild(tr);
       });
-
-      tr.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        tr.classList.add("bg-warning-subtle");
-      });
-
-      tr.addEventListener("dragleave", () => {
-        tr.classList.remove("bg-warning-subtle");
-      });
-
-      tr.addEventListener("drop", (e) => {
-        e.preventDefault();
-        tr.classList.remove("bg-warning-subtle");
-
-        const sourceId = e.dataTransfer.getData("guestId");
-        const targetId = tr.dataset.id;
-
-        if (sourceId === targetId) return;
-
-        showRelationModal(sourceId, targetId);
-      });
-
-      tbody.appendChild(tr);
-
     });
-  });
 }
 
 // ✅ Создание заголовка таблицы
@@ -71,7 +161,9 @@ function createTableHeader(guest) {
   thead.innerHTML = `
     <tr>
       <th>№</th>
-      ${Object.keys(guest).map(k => k !== 'relations' ? `<th>${k}</th>` : '').join('')}
+      ${Object.keys(guest)
+        .map((k) => (k !== "relations" ? `<th>${k}</th>` : ""))
+        .join("")}
       <th></th>
     </tr>
   `;
@@ -82,9 +174,9 @@ function createGuestRow(index, key, guest) {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>${index + 1}</td>
-    ${Object.entries(guest).map(([k, v]) =>
-    k !== 'relations' ? `<td>${v || ""}</td>` : ''
-  ).join('')}
+    ${Object.entries(guest)
+      .map(([k, v]) => (k !== "relations" ? `<td>${v || ""}</td>` : ""))
+      .join("")}
     <td>
       <button class="btn btn-sm btn-warning edit-btn"
         data-id="${key}"
@@ -103,7 +195,9 @@ function createGuestRow(index, key, guest) {
 
 // ✅ Обработка кнопки "Добавить гостя"
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("addGuestButton").addEventListener("click", createAddGuestModal);
+  document
+    .getElementById("addGuestButton")
+    .addEventListener("click", createAddGuestModal);
   loadGuestsFromFirebase();
 });
 
@@ -149,8 +243,12 @@ function createAddGuestModal() {
   });
 
   setTimeout(() => {
-    document.getElementById("saveGuestBtn").addEventListener("click", saveNewGuest);
-    document.getElementById("addRelationBtn").addEventListener("click", addRelationField);
+    document
+      .getElementById("saveGuestBtn")
+      .addEventListener("click", saveNewGuest);
+    document
+      .getElementById("addRelationBtn")
+      .addEventListener("click", addRelationField);
   }, 0);
 }
 
@@ -171,7 +269,9 @@ function addRelationField() {
     </select>
     <input type="text" class="form-control form-control-sm" placeholder="Имя гостя..." list="${relationId}" data-name />
     <datalist id="${relationId}">
-      ${Object.values(allGuests).map(g => `<option value="${g.name}">`).join("")}
+      ${Object.values(allGuests)
+        .map((g) => `<option value="${g.name}">`)
+        .join("")}
     </datalist>
     <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">✕</button>
   `;
@@ -186,15 +286,19 @@ function saveNewGuest() {
   const relations = {};
   const relatedUpdates = [];
 
-  const relationWrappers = document.querySelectorAll("#relationsContainer > div");
+  const relationWrappers = document.querySelectorAll(
+    "#relationsContainer > div"
+  );
 
-  relationWrappers.forEach(wrapper => {
+  relationWrappers.forEach((wrapper) => {
     const type = wrapper.querySelector("[data-type]").value;
     const input = wrapper.querySelector("[data-name]");
     const relatedName = input.value.trim();
     if (!relatedName) return;
 
-    const existing = Object.entries(allGuests).find(([gid, g]) => g.name === relatedName);
+    const existing = Object.entries(allGuests).find(
+      ([gid, g]) => g.name === relatedName
+    );
     let relatedId;
 
     if (existing) {
@@ -203,7 +307,7 @@ function saveNewGuest() {
       relatedId = db.ref("guests").push().key;
       db.ref(`guests/${relatedId}`).set({
         name: relatedName,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       });
     }
 
@@ -219,7 +323,7 @@ function saveNewGuest() {
       wife: "husband",
       mother: "children",
       father: "children",
-      child: "parent"
+      child: "parent",
     }[type];
 
     relatedUpdates.push({ relatedId, reverseType });
@@ -228,15 +332,16 @@ function saveNewGuest() {
   const guestRef = db.ref("guests").push();
   const newGuestId = guestRef.key;
 
-  guestRef.set({
-    name,
-    relations,
-    uploadedAt: new Date().toISOString()
-  }).then(() => {
-    syncGuestRelations(newGuestId, relatedUpdates, "addGuestModal");
-  });
+  guestRef
+    .set({
+      name,
+      relations,
+      uploadedAt: new Date().toISOString(),
+    })
+    .then(() => {
+      syncGuestRelations(newGuestId, relatedUpdates, "addGuestModal");
+    });
 }
-
 
 function openEditModal(id, guest) {
   const existing = document.getElementById("editGuestModal");
@@ -256,7 +361,9 @@ function openEditModal(id, guest) {
             <form id="editForm">
               <div class="mb-3">
                 <label for="editGuestName" class="form-label">Имя</label>
-                <input type="text" class="form-control" id="editGuestName" value="${guest.name || ""}" required />
+                <input type="text" class="form-control" id="editGuestName" value="${
+                  guest.name || ""
+                }" required />
               </div>
               <div id="editRelationsContainer" class="mb-3"></div>
               <button type="button" class="btn btn-outline-secondary btn-sm" id="editAddRelationBtn">+ Добавить родственника</button>
@@ -283,7 +390,7 @@ function openEditModal(id, guest) {
   if (guest.relations) {
     Object.entries(guest.relations).forEach(([type, value]) => {
       if (Array.isArray(value)) {
-        value.forEach(id => addRelationFieldEdit(type, id));
+        value.forEach((id) => addRelationFieldEdit(type, id));
       } else {
         addRelationFieldEdit(type, value);
       }
@@ -292,14 +399,20 @@ function openEditModal(id, guest) {
 
   // 🧩 Обработчики
   setTimeout(() => {
-    document.getElementById("editAddRelationBtn").addEventListener("click", () => addRelationFieldEdit());
-    document.getElementById("editSaveGuestBtn").addEventListener("click", () => saveEditedGuest(id));
+    document
+      .getElementById("editAddRelationBtn")
+      .addEventListener("click", () => addRelationFieldEdit());
+    document
+      .getElementById("editSaveGuestBtn")
+      .addEventListener("click", () => saveEditedGuest(id));
     document.getElementById("deleteGuestBtn").addEventListener("click", () => {
       if (confirm("Удалить этого гостя?")) {
-        db.ref(`guests/${id}`).remove().then(() => {
-          bootstrap.Modal.getInstance(modalElement).hide();
-          loadGuestsFromFirebase();
-        });
+        db.ref(`guests/${id}`)
+          .remove()
+          .then(() => {
+            bootstrap.Modal.getInstance(modalElement).hide();
+            loadGuestsFromFirebase();
+          });
       }
     });
   }, 0);
@@ -314,15 +427,25 @@ function addRelationFieldEdit(type = "husband", guestId = "") {
   wrapper.className = "mb-2 d-flex gap-2 align-items-center";
   wrapper.innerHTML = `
     <select class="form-select form-select-sm" style="width: 120px;" data-type>
-      <option value="husband" ${type === "husband" ? "selected" : ""}>Муж</option>
+      <option value="husband" ${
+        type === "husband" ? "selected" : ""
+      }>Муж</option>
       <option value="wife" ${type === "wife" ? "selected" : ""}>Жена</option>
-      <option value="father" ${type === "father" ? "selected" : ""}>Отец</option>
-      <option value="mother" ${type === "mother" ? "selected" : ""}>Мать</option>
-      <option value="child" ${type === "child" ? "selected" : ""}>Ребёнок</option>
+      <option value="father" ${
+        type === "father" ? "selected" : ""
+      }>Отец</option>
+      <option value="mother" ${
+        type === "mother" ? "selected" : ""
+      }>Мать</option>
+      <option value="child" ${
+        type === "child" ? "selected" : ""
+      }>Ребёнок</option>
     </select>
     <input type="text" class="form-control form-control-sm" placeholder="Имя гостя..." list="${relationId}" data-name value="${name}" />
     <datalist id="${relationId}">
-      ${Object.values(allGuests).map(g => `<option value="${g.name}">`).join("")}
+      ${Object.values(allGuests)
+        .map((g) => `<option value="${g.name}">`)
+        .join("")}
     </datalist>
     <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">✕</button>
   `;
@@ -337,15 +460,19 @@ function saveEditedGuest(id) {
   const relatedUpdates = [];
   const previousRelations = allGuests[id]?.relations || {};
 
-  const relationWrappers = document.querySelectorAll("#editRelationsContainer > div");
+  const relationWrappers = document.querySelectorAll(
+    "#editRelationsContainer > div"
+  );
 
-  relationWrappers.forEach(wrapper => {
+  relationWrappers.forEach((wrapper) => {
     const type = wrapper.querySelector("[data-type]").value;
     const input = wrapper.querySelector("[data-name]");
     const relatedName = input.value.trim();
     if (!relatedName) return;
 
-    const existing = Object.entries(allGuests).find(([gid, g]) => g.name === relatedName);
+    const existing = Object.entries(allGuests).find(
+      ([gid, g]) => g.name === relatedName
+    );
     let relatedId;
 
     if (existing) {
@@ -354,13 +481,14 @@ function saveEditedGuest(id) {
       relatedId = db.ref("guests").push().key;
       db.ref(`guests/${relatedId}`).set({
         name: relatedName,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       });
     }
 
     if (type === "child") {
       relations.children = relations.children || [];
-      if (!relations.children.includes(relatedId)) relations.children.push(relatedId);
+      if (!relations.children.includes(relatedId))
+        relations.children.push(relatedId);
     } else {
       relations[type] = relatedId;
     }
@@ -370,24 +498,26 @@ function saveEditedGuest(id) {
       wife: "husband",
       mother: "children",
       father: "children",
-      child: "parent"
+      child: "parent",
     };
 
     const reverseType = reverseTypeMap[type];
 
-    const previousTypeId = Object.entries(previousRelations)
-      .find(([k, v]) => v === relatedId || (Array.isArray(v) && v.includes(relatedId)))?.[0];
+    const previousTypeId = Object.entries(previousRelations).find(
+      ([k, v]) => v === relatedId || (Array.isArray(v) && v.includes(relatedId))
+    )?.[0];
 
     const oldReverseType = reverseTypeMap[previousTypeId];
 
     relatedUpdates.push({ relatedId, reverseType, oldReverseType });
   });
 
-  db.ref(`guests/${id}`).update({ name, relations }).then(() => {
-    syncGuestRelations(id, relatedUpdates, "editGuestModal");
-  });
+  db.ref(`guests/${id}`)
+    .update({ name, relations })
+    .then(() => {
+      syncGuestRelations(id, relatedUpdates, "editGuestModal");
+    });
 }
-
 
 function showRelationModal(sourceId, targetId) {
   const guest1 = allGuests[sourceId];
@@ -425,7 +555,9 @@ function showRelationModal(sourceId, targetId) {
   `;
   document.body.appendChild(modal);
 
-  const modalInstance = new bootstrap.Modal(document.getElementById("relationModal"));
+  const modalInstance = new bootstrap.Modal(
+    document.getElementById("relationModal")
+  );
   modalInstance.show();
 
   document.getElementById("confirmRelationBtn").onclick = () => {
@@ -449,61 +581,64 @@ function linkGuests(sourceId, targetId, type) {
     mother: "children",
   }[type];
 
-  return Promise.all([
-    guest1Ref.once("value"),
-    guest2Ref.once("value"),
-  ]).then(([snap1, snap2]) => {
-    const rel1 = snap1.val() || {};
-    const rel2 = snap2.val() || {};
+  return Promise.all([guest1Ref.once("value"), guest2Ref.once("value")]).then(
+    ([snap1, snap2]) => {
+      const rel1 = snap1.val() || {};
+      const rel2 = snap2.val() || {};
 
-    // В source → target
-    if (type === "child") {
-      rel1.children = rel1.children || [];
-      if (!rel1.children.includes(targetId)) rel1.children.push(targetId);
-    } else {
-      rel1[type] = targetId;
+      // В source → target
+      if (type === "child") {
+        rel1.children = rel1.children || [];
+        if (!rel1.children.includes(targetId)) rel1.children.push(targetId);
+      } else {
+        rel1[type] = targetId;
+      }
+
+      // В target → source
+      if (reverseType === "children") {
+        rel2.children = rel2.children || [];
+        if (!rel2.children.includes(sourceId)) rel2.children.push(sourceId);
+      } else {
+        rel2[reverseType] = sourceId;
+      }
+
+      return Promise.all([guest1Ref.set(rel1), guest2Ref.set(rel2)]);
     }
-
-    // В target → source
-    if (reverseType === "children") {
-      rel2.children = rel2.children || [];
-      if (!rel2.children.includes(sourceId)) rel2.children.push(sourceId);
-    } else {
-      rel2[reverseType] = sourceId;
-    }
-
-    return Promise.all([
-      guest1Ref.set(rel1),
-      guest2Ref.set(rel2)
-    ]);
-  });
+  );
 }
 
 function syncGuestRelations(guestId, relatedUpdates, modalIdToClose = null) {
-  const updatePromises = relatedUpdates.map(({ relatedId, reverseType, oldReverseType }) => {
-    return db.ref(`guests/${relatedId}/relations`).once("value").then(snapshot => {
-      const rel = snapshot.val() || {};
+  const updatePromises = relatedUpdates.map(
+    ({ relatedId, reverseType, oldReverseType }) => {
+      return db
+        .ref(`guests/${relatedId}/relations`)
+        .once("value")
+        .then((snapshot) => {
+          const rel = snapshot.val() || {};
 
-      // Удаление старой связи, если она изменилась
-      if (oldReverseType && oldReverseType !== reverseType) {
-        if (oldReverseType === "children" && rel.children) {
-          rel.children = rel.children.filter(childId => childId !== guestId);
-        } else if (rel[oldReverseType] === guestId) {
-          delete rel[oldReverseType];
-        }
-      }
+          // Удаление старой связи, если она изменилась
+          if (oldReverseType && oldReverseType !== reverseType) {
+            if (oldReverseType === "children" && rel.children) {
+              rel.children = rel.children.filter(
+                (childId) => childId !== guestId
+              );
+            } else if (rel[oldReverseType] === guestId) {
+              delete rel[oldReverseType];
+            }
+          }
 
-      // Добавление новой связи
-      if (reverseType === "children") {
-        rel.children = rel.children || [];
-        if (!rel.children.includes(guestId)) rel.children.push(guestId);
-      } else {
-        rel[reverseType] = guestId;
-      }
+          // Добавление новой связи
+          if (reverseType === "children") {
+            rel.children = rel.children || [];
+            if (!rel.children.includes(guestId)) rel.children.push(guestId);
+          } else {
+            rel[reverseType] = guestId;
+          }
 
-      return db.ref(`guests/${relatedId}/relations`).update(rel);
-    });
-  });
+          return db.ref(`guests/${relatedId}/relations`).update(rel);
+        });
+    }
+  );
 
   return Promise.all(updatePromises).then(() => {
     const modal = document.getElementById(modalIdToClose || "editGuestModal");
